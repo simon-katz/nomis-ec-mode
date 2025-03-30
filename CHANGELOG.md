@@ -6,6 +6,8 @@
 
 - Add `nomis/ec-base-priority-for-overlays`.
 
+- Fix some obscure mis-coloring. (Fixed as a result of refactoring internals to make things less magical and more obviously correct.)
+
 
 ## Version 0.5 — 2025-03-25
 
