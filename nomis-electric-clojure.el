@@ -308,6 +308,20 @@ specifically server code, when `-nomis/ec-show-debug-overlays?` is true.")
 ;;;; Some utilities copied from `nomis-sexp-utils` and other places. (I don't
 ;;;; want to make this package dependent on those.)
 
+(defun -nomis/ec-reporting-non-local-exit* (msg f)
+  ;; In preference to catch and rethrow which gives the rethrowing context in
+  ;; the debugger.
+  (let* ((error? t))
+    (unwind-protect
+        (prog1 (funcall f)
+          (setq error? nil))
+      (when error?
+        (message "%s" msg)))))
+
+(cl-defmacro -nomis/ec-reporting-non-local-exit (msg &body body)
+  (declare (indent 1))
+  `(-nomis/ec-reporting-non-local-exit* ,msg (lambda () ,@body)))
+
 (defun -nomis/ec-plist-add (plist property value)
   "Add PROPERTY / VALUE to the front of PLIST. Does not check whether
 PROPERTY is already in PLIST."
@@ -1477,7 +1491,9 @@ Otherwise throw an exception."
       (remove-overlays start-2 end-2 'category 'nomis/ec-overlay)
       (while (and (< (point) end-2)
                   (-nomis/ec-skip-then-can-forward-sexp?))
-        (-nomis/ec-walk-and-overlay-any-version)
+        (-nomis/ec-reporting-non-local-exit
+            "nomis-electric-clojure-mode: non-local exit"
+          (-nomis/ec-walk-and-overlay-any-version))
         (forward-sexp))
       (-nomis/ec-feedback-flash start end start-2 end-2)
       ;; (-nomis/ec-message-no-disp "*-nomis/ec-n-lumps-in-current-update* = %s"
