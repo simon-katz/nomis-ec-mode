@@ -412,6 +412,10 @@ PROPERTY is already in PLIST."
                        (skip-chars-forward "[:space:]\n")
                        (helper n-outstanding-comments))
 
+                      ((looking-at ",")
+                       (forward-char)
+                       (helper n-outstanding-comments))
+
                       ((looking-at (regexp-quote "^"))
                        (while (looking-at (regexp-quote "^"))
                          (forward-char)

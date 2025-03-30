@@ -8,12 +8,15 @@
 
 (e/defn Foo []
   ;; Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+  {:a "hello", :ab 2}
   (e/server
    (let [a 1 ; Nam dignissim elit.
          ;; Suspendisse euismod quam tortor.
          #_foo
          #_#_foo bar
          b (do a #_34)
+         ,,,,,,,,,,,,,,,,,,,
+         #_#_foo ,,,, bar
          c (do a #_#_34)]
      (ElectricCall global-1 a b c #_#_a)))
 
