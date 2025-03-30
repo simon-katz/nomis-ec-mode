@@ -8,7 +8,6 @@
 
 (def global-1 42)
 
-;; TODO: Rename -- not just reader syntax.
 (e/defn Foo [local-1]
   (e/server
    (let [local-2 global-1
