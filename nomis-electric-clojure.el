@@ -1149,7 +1149,6 @@ Otherwise throw an exception."
                         (-nomis/ec-pos-end-of-form-or-close-bracket)))
         (progn
           (nomis/ec-down-list-v3 '(list-parsing))
-          (-nomis/ec-bof-if-poss)
           (-nomis/ec-process-terms operator-id (rest term) inherited-site)
           (backward-up-list)
           (forward-sexp)))
