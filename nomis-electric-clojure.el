@@ -272,7 +272,7 @@ specifically server code, when `-nomis/ec-show-debug-overlays?` is true.")
 (defun -nomis/ec-a-few-current-chars ()
   (let* ((start (point))
          (end-of-form (save-excursion
-                        (when (-nomis/ec-can-forward-sexp?)
+                        (when (-nomis/ec-internal-can-forward-sexp?)
                           (forward-sexp))
                         (point)))
          (end-of-line (pos-eol)))
@@ -370,7 +370,7 @@ PROPERTY is already in PLIST."
         (progn (forward-sexp) t)
       (error nil))))
 
-(defun -nomis/ec-can-forward-sexp? ()
+(defun -nomis/ec-internal-can-forward-sexp? ()
   ;; This is complicated, because `forward-sexp` behaves differently at end
   ;; of file and inside-and-at-end-of a `(...)` form.
   (cond ((not (-nomis/ec-at-top-level?))
@@ -392,25 +392,49 @@ PROPERTY is already in PLIST."
                            (point))))
                (error nil))))))
 
-(defun -nomis/ec-bof ()
-  (forward-sexp)
-  (backward-sexp))
-
-(defun -nomis/ec-bof-if-poss ()
-  (when (-nomis/ec-can-forward-sexp?)
-    (-nomis/ec-bof)))
-
 (defun -nomis/ec-skip-ignorables ()
-  (while (looking-at (regexp-quote "^"))
-    (progn (forward-char)
-           (forward-sexp))
-    (-nomis/ec-bof-if-poss))
-  (-nomis/ec-show-place-for-metadata))
+  (cl-labels ((helper (n-outstanding-comments)
+                (cond ((looking-at "[[:space:]\n]")
+                       (skip-chars-forward "[:space:]\n")
+                       (helper n-outstanding-comments))
+
+                      ((looking-at (regexp-quote "^"))
+                       (while (looking-at (regexp-quote "^"))
+                         (forward-char)
+                         (forward-sexp))
+                       (helper n-outstanding-comments))
+
+                      ((looking-at "#_")
+                       (forward-char 2)
+                       (helper (1+ n-outstanding-comments)))
+
+                      ((looking-at ";")
+                       (beginning-of-line 2)
+                       (helper n-outstanding-comments))
+
+                      ((> n-outstanding-comments 0)
+                       (if (-nomis/ec-internal-can-forward-sexp?)
+                           (progn (forward-sexp)
+                                  (helper (1- n-outstanding-comments)))
+                         (-nomis/ec-overlay-unparsable (save-excursion
+                                                         (backward-sexp)
+                                                         (forward-sexp)
+                                                         (point))
+                                                       (-nomis/ec-pos-close-bracket)
+                                                       'missing-form-for-comment
+                                                       "missing-form-for-comment"))))))
+    (helper 0))
+  (when (-nomis/ec-internal-can-forward-sexp?)
+    (-nomis/ec-show-place-for-metadata)))
+
+(defun -nomis/ec-skip-then-can-forward-sexp? ()
+  (-nomis/ec-skip-ignorables)
+  (-nomis/ec-internal-can-forward-sexp?))
 
 (defun nomis/ec-at-or-before-start-of-form-to-descend-v2? ()
   ;; I can't get this to work with a regexp for whitespace followed by
   ;; a start-of-form-to-descend-v2. So:
-  (and (-nomis/ec-can-forward-sexp?)
+  (and (-nomis/ec-skip-then-can-forward-sexp?)
        (save-excursion
          (forward-sexp)
          (backward-sexp)
@@ -419,7 +443,7 @@ PROPERTY is already in PLIST."
 (defun nomis/ec-at-or-before-start-of-form-to-descend-v3? ()
   ;; I can't get this to work with a regexp for whitespace followed by
   ;; a start-of-form-to-descend-v3. So:
-  (and (-nomis/ec-can-forward-sexp?)
+  (and (-nomis/ec-skip-then-can-forward-sexp?)
        (save-excursion
          (forward-sexp)
          (backward-sexp)
@@ -437,7 +461,7 @@ PROPERTY is already in PLIST."
                   (point)))
 
 (cl-defun -nomis/ec-pos-end-of-form-or-close-bracket (&optional (pos (point)))
-  (if (-nomis/ec-can-forward-sexp?)
+  (if (-nomis/ec-skip-then-can-forward-sexp?)
       (-nomis/ec-pos-end-of-form pos)
     (-nomis/ec-pos-close-bracket pos)))
 
@@ -596,7 +620,7 @@ PROPERTY is already in PLIST."
   "If we are at or before the start of a bracketed s-expression, move
 into that expression -- /ie/ move down one level of parentheses.
 Otherwise throw an exception."
-  (cond ((not (-nomis/ec-can-forward-sexp?))
+  (cond ((not (-nomis/ec-skip-then-can-forward-sexp?))
          (let* ((msg (format "Missing %s" (first desc))))
            (signal '-nomis/ec-parse-error
                    (list msg
@@ -629,7 +653,7 @@ Otherwise throw an exception."
 
 (defun -nomis/ec-pos-of-end-of-form ()
   (save-excursion
-    (if (-nomis/ec-can-forward-sexp?)
+    (if (-nomis/ec-skip-then-can-forward-sexp?)
         (progn (forward-sexp)
                (point))
       ;; We can get here when something is missing. That might be an optional
@@ -656,7 +680,7 @@ Otherwise throw an exception."
                                    (not nomis/ec-show-grammar-tooltips?))))
          (start (point))
          (end (or end
-                  (save-excursion (when (-nomis/ec-can-forward-sexp?)
+                  (save-excursion (when (-nomis/ec-skip-then-can-forward-sexp?)
                                     (forward-sexp))
                                   (point)))))
     (when -nomis/ec-print-debug-info-to-messages-buffer?
@@ -696,8 +720,7 @@ Otherwise throw an exception."
   (save-excursion
     (down-list)
     (forward-sexp)
-    (while (-nomis/ec-can-forward-sexp?)
-      (-nomis/ec-bof)
+    (while (-nomis/ec-skip-then-can-forward-sexp?)
       (-nomis/ec-debug-message *-nomis/ec-site* (list 'args-of-form 'arg))
       (-nomis/ec-walk-and-overlay-v2)
       (forward-sexp))))
@@ -716,8 +739,7 @@ Otherwise throw an exception."
   (-nomis/ec-debug-message *-nomis/ec-site* 'other-form-to-descend-v2)
   (save-excursion
     (down-list)
-    (while (-nomis/ec-can-forward-sexp?)
-      (-nomis/ec-bof)
+    (while (-nomis/ec-skip-then-can-forward-sexp?)
       (-nomis/ec-walk-and-overlay-v2)
       (forward-sexp))))
 
@@ -963,9 +985,7 @@ Otherwise throw an exception."
                                       &key)
   (save-excursion
     (nomis/ec-down-list-v3 (cons 'e/fn-bindings tag))
-    (while (-nomis/ec-can-forward-sexp?)
-      (-nomis/ec-bof)
-      (-nomis/ec-skip-ignorables)
+    (while (-nomis/ec-skip-then-can-forward-sexp?)
       ;; Slighly unpleasant use of `setq`. Maybe this could be rewritten
       ;; to use recursion instead of iteration.
       (setq *-nomis/ec-bound-vars*
@@ -984,10 +1004,8 @@ Otherwise throw an exception."
            (new-rhs-site (-nomis/ec-transmogrify-site rhs-site
                                                       inherited-site)))
       (nomis/ec-down-list-v3 tag)
-      (while (-nomis/ec-can-forward-sexp?)
+      (while (-nomis/ec-skip-then-can-forward-sexp?)
         ;; Note the LHS of the binding:
-        (-nomis/ec-bof)
-        (-nomis/ec-skip-ignorables)
         (unless no-bind?
           ;; Slighly unpleasant use of `setq`. Maybe this could be rewritten
           ;; to use recursion instead of iteration.
@@ -996,9 +1014,7 @@ Otherwise throw an exception."
                         *-nomis/ec-bound-vars*)))
         (forward-sexp)
         ;; Walk the RHS of the binding, if there is one:
-        (when (-nomis/ec-can-forward-sexp?)
-          (-nomis/ec-bof)
-          (-nomis/ec-skip-ignorables)
+        (when (-nomis/ec-skip-then-can-forward-sexp?)
           (let* ((*-nomis/ec-default-site* new-rhs-site))
             (-nomis/ec-with-site (;; avoid-stupid-indentation
                                   :tag (cons 'binding-rhs tag)
@@ -1018,8 +1034,7 @@ Otherwise throw an exception."
   (save-excursion
     (let* ((*-nomis/enclosing-body-level* *-nomis/ec-level*))
       ;; Each body form separately:
-      (while (-nomis/ec-can-forward-sexp?)
-        (-nomis/ec-bof)
+      (while (-nomis/ec-skip-then-can-forward-sexp?)
         (-nomis/ec-with-site (;; avoid-stupid-indentation
                               :tag (cons 'body-form tag)
                               :tag-v2 'body-form
@@ -1037,8 +1052,7 @@ Otherwise throw an exception."
   (cl-assert (member site '(nil nec/client nec/server nec/neutral nec/inherit)))
   (save-excursion
     ;; Each arg separately:
-    (while (-nomis/ec-can-forward-sexp?)
-      (-nomis/ec-bof)
+    (while (-nomis/ec-skip-then-can-forward-sexp?)
       (-nomis/ec-with-site (;; avoid-stupid-indentation
                             :tag (cons 'arg tag)
                             :tag-v2 'arg
@@ -1123,7 +1137,7 @@ Otherwise throw an exception."
                finally (let* ((expecteds (string-join (-map #'first
                                                             (rest term))
                                                       ", "))
-                              (can-forward? (-nomis/ec-can-forward-sexp?))
+                              (can-forward? (-nomis/ec-skip-then-can-forward-sexp?))
                               (msg (if can-forward?
                                        (format "Expected one of %s"
                                                expecteds)
@@ -1170,8 +1184,7 @@ Otherwise throw an exception."
         ;; See https://clojurians.slack.com/archives/C03S1KBA2/p1732491608620849
         ;; Oh, it's outside of the list anyway, so the parsing code will
         ;; actually just ignore it. No error.
-        (while (-nomis/ec-can-forward-sexp?)
-          (-nomis/ec-bof)
+        (while (-nomis/ec-skip-then-can-forward-sexp?)
           (do-one)))
       ;; :LIMITATIONS-OF-THE-GRAMMAR Are we at the right buffer location
       ;; for continuing?
@@ -1186,7 +1199,7 @@ Otherwise throw an exception."
 (defun -nomis/ec-process-terms (operator-id terms inherited-site)
   (when terms
     (cl-destructuring-bind (term &rest rest-terms) terms
-      (-nomis/ec-bof-if-poss)
+      (-nomis/ec-skip-ignorables)
       (or (-nomis/ec-process-+-list-ecase-etc operator-id term inherited-site)
           (let* ((term-name (if (atom term) term (first term)))
                  (term-opts (if (atom term) '() (rest term)))
@@ -1251,7 +1264,7 @@ Otherwise throw an exception."
   (save-excursion
     (let* ((hosted-call? (save-excursion
                            (nomis/ec-down-list-v3 'function-call)
-                           (-nomis/ec-bof-if-poss)
+                           (-nomis/ec-skip-ignorables)
                            (-nomis/ec-looking-at-hosted-function-operator?)))
            (*-nomis/enclosing-hosted-call-level* (when hosted-call?
                                                    *-nomis/ec-level*)))
@@ -1263,10 +1276,9 @@ Otherwise throw an exception."
                                              -nomis/ec->grammar-description))
         (nomis/ec-down-list-v3 'function-call)
         (let* ((arg-count 0))
-          (while (-nomis/ec-can-forward-sexp?)
+          (while (-nomis/ec-skip-then-can-forward-sexp?)
             (cl-incf arg-count)
             (let* ((*-nomis/ec-first-arg?* (= arg-count 1)))
-              (-nomis/ec-bof)
               (-nomis/ec-walk-and-overlay-v3)
               (forward-sexp))))))))
 
@@ -1280,8 +1292,7 @@ Otherwise throw an exception."
                           :description (-> 'literal-data
                                            -nomis/ec->grammar-description))
       (nomis/ec-down-list-v3 'literal-data)
-      (while (-nomis/ec-can-forward-sexp?)
-        (-nomis/ec-bof)
+      (while (-nomis/ec-skip-then-can-forward-sexp?)
         (-nomis/ec-walk-and-overlay-v3)
         (forward-sexp)))))
 
@@ -1465,8 +1476,7 @@ Otherwise throw an exception."
                                   (point))))
       (remove-overlays start-2 end-2 'category 'nomis/ec-overlay)
       (while (and (< (point) end-2)
-                  (-nomis/ec-can-forward-sexp?))
-        (-nomis/ec-bof)
+                  (-nomis/ec-skip-then-can-forward-sexp?))
         (-nomis/ec-walk-and-overlay-any-version)
         (forward-sexp))
       (-nomis/ec-feedback-flash start end start-2 end-2)
