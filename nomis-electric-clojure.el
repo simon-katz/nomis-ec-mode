@@ -392,6 +392,21 @@ PROPERTY is already in PLIST."
                            (point))))
                (error nil))))))
 
+(defun -nomis/ec-bof ()
+  (forward-sexp)
+  (backward-sexp))
+
+(defun -nomis/ec-bof-if-poss ()
+  (when (-nomis/ec-can-forward-sexp?)
+    (-nomis/ec-bof)))
+
+(defun -nomis/ec-skip-ignorables ()
+  (while (looking-at (regexp-quote "^"))
+    (progn (forward-char)
+           (forward-sexp))
+    (-nomis/ec-bof-if-poss))
+  (-nomis/ec-show-place-for-metadata))
+
 (defun nomis/ec-at-or-before-start-of-form-to-descend-v2? ()
   ;; I can't get this to work with a regexp for whitespace followed by
   ;; a start-of-form-to-descend-v2. So:
@@ -630,14 +645,6 @@ Otherwise throw an exception."
                     (backward-char)
                     (point))))
 
-(defun -nomis/ec-bof ()
-  (forward-sexp)
-  (backward-sexp))
-
-(defun -nomis/ec-bof-if-poss ()
-  (when (-nomis/ec-can-forward-sexp?)
-    (-nomis/ec-bof)))
-
 (defun -nomis/ec-with-site* (tag-v2 tag site end description print-env? f)
   (cl-assert tag)
   (cl-assert tag-v2)
@@ -787,13 +794,6 @@ Otherwise throw an exception."
                           :end (1+ (point)))
       ;; Nothing more.
       )))
-
-(defun -nomis/ec-skip-ignorables ()
-  (while (looking-at (regexp-quote "^"))
-    (progn (forward-char)
-           (forward-sexp))
-    (-nomis/ec-bof-if-poss))
-  (-nomis/ec-show-place-for-metadata))
 
 (defun -nomis/ec-overlay-unparsable (start end tag description)
   (save-excursion
