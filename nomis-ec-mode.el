@@ -1,4 +1,4 @@
-;;;; nomis-electric-clojure.el --- Minor mode for Electric Clojure ---  -*- lexical-binding: t -*-
+;;;; nomis-ec-mode.el --- Minor mode for Electric Clojure ---  -*- lexical-binding: t -*-
 
 ;;;; This is an Emacs minor more for Electric Clojure.
 ;;;; Copyright (C) 2025 Simon Katz
@@ -1837,4 +1837,4 @@ This is very DIY. Is there a better way?")
 
 ;;;; ___________________________________________________________________________
 
-(provide 'nomis-electric-clojure)
+(provide 'nomis-ec-mode)
