@@ -47,12 +47,12 @@
 ;;;; ___________________________________________________________________________
 
 (defconst nomis/ec-version "0.6-SNAPSHOT"
-  "The current version of nomis-electric-clojure-mode.")
+  "The current version of nomis/ec-mode.")
 
 (defun nomis/ec-version ()
-  "Display nomis-electric-clojure-mode's version."
+  "Display nomis/ec-mode's version."
   (interactive)
-  (message "nomis-electric-clojure-mode %s" nomis/ec-version))
+  (message "nomis/ec-mode %s" nomis/ec-version))
 
 ;;;; ___________________________________________________________________________
 
@@ -63,8 +63,7 @@
 ;;;; Customizable things
 
 (defcustom nomis/ec-auto-enable? t
-  "Whether to turn on `nomis-electric-clojure-mode` automatically by
-looking for
+  "Whether to turn on `nomis/ec-mode` automatically by looking for
   `[hyperfiddle.electric3` (for v3)
 or, failing that, for
   `[hyperfiddle.electric` (for v2)
@@ -77,7 +76,7 @@ trying to detect the version of Electric Clojure.
 
 You can re-run the auto-detection in any of the following ways:
 - by running `M-x nomis/ec-redetect-electric-version`
-- by turning `nomis-electric-clojure-mode` off and then back on
+- by turning `nomis/ec-mode` off and then back on
 - by reverting the buffer."
   :type 'integer)
 
@@ -172,7 +171,7 @@ specifically server code, when `-nomis/ec-show-debug-overlays?` is true.")
 
 ;;;; ___________________________________________________________________________
 
-(define-error '-nomis/ec-parse-error "nomis-electric-clojure-mode: Cannot parse")
+(define-error '-nomis/ec-parse-error "nomis/ec-mode: Cannot parse")
 
 ;;;; ___________________________________________________________________________
 
@@ -1506,7 +1505,7 @@ Otherwise throw an exception."
       (while (and (< (point) end-2)
                   (-nomis/ec-skip-then-can-forward-sexp?))
         (-nomis/ec-reporting-non-local-exit
-            "nomis-electric-clojure-mode: non-local exit"
+            "nomis/ec-mode: non-local exit"
           (-nomis/ec-walk-and-overlay-any-version))
         (forward-sexp))
       (-nomis/ec-feedback-flash start end start-2 end-2)
@@ -1517,8 +1516,7 @@ Otherwise throw an exception."
 ;;;; ___________________________________________________________________________
 
 (defvar -nomis/ec-buffers '()
-  "A list of all buffers where `nomis-electric-clojure-mode` is
-turned on.
+  "A list of all buffers where `nomis/ec-mode` is turned on.
 
 This is used when reverting a buffer, when we reapply the mode.
 
@@ -1545,26 +1543,30 @@ This is very DIY. Is there a better way?")
 
 (defun -nomis/ec-after-revert ()
   (when (member (current-buffer) -nomis/ec-buffers)
-    (nomis-electric-clojure-mode)))
+    (nomis/ec-mode)))
 
-(define-minor-mode nomis-electric-clojure-mode
+(define-minor-mode nomis/ec-mode
   "Color Electric Clojure client code regions and server code regions."
   :init-value nil
-  (if nomis-electric-clojure-mode
+  (if nomis/ec-mode
       (progn
         (-nomis/ec-update-faces)
         (-nomis/ec-enable)
         (add-hook 'before-revert-hook '-nomis/ec-before-revert nil t)
         (add-hook 'after-revert-hook '-nomis/ec-after-revert nil t)
         (-nomis/ec-detect-electric-version)
-        (message "Nomis-Electric-Clojure mode enabled in current buffer; Electric version = %s"
+        (message "nomis/ec-mode mode enabled in current buffer; Electric version = %s"
                  (string-replace ":"
                                  ""
                                  (symbol-name -nomis/ec-electric-version))))
     (progn
       (-nomis/ec-disable)
       (remove-hook 'before-revert-hook '-nomis/ec-before-revert t)
-      (remove-hook 'after-revert-hook '-nomis/ec-after-revert t))))
+      (remove-hook 'after-revert-hook '-nomis/ec-after-revert t)
+      (message "nomis/ec-mode mode disabled in current buffer"))))
+
+
+(defalias 'nomis-electric-clojure-mode 'nomis/ec-mode)
 
 ;;;; ___________________________________________________________________________
 ;;;; Auto-activation of the mode
@@ -1574,7 +1576,7 @@ This is very DIY. Is there a better way?")
     (let* ((v (-nomis/ec-explicit-electric-version)))
       (when v
         (setq -nomis/ec-noted-explicit-electric-version v)
-        (nomis-electric-clojure-mode)))))
+        (nomis/ec-mode)))))
 
 (add-hook 'clojurec-mode-hook
           '-nomis/ec-auto-enable-if-electric)
@@ -1589,17 +1591,17 @@ This is very DIY. Is there a better way?")
 (defun -nomis/ec-redraw-all-buffers ()
   (dolist (b (buffer-list))
     (with-current-buffer b
-      (when nomis-electric-clojure-mode
+      (when nomis/ec-mode
         (-nomis/ec-redraw)))))
 
-(defun -nomis/ec-check-nomis-electric-clojure-mode ()
-  (when (not nomis-electric-clojure-mode)
-    (user-error "nomis-electric-clojure-mode is not turned on")))
+(defun -nomis/ec-check-nomis-ec-mode ()
+  (when (not nomis/ec-mode)
+    (user-error "nomis/ec-mode is not turned on")))
 
 (defun nomis/ec-redetect-electric-version ()
   (interactive)
-  (if (not nomis-electric-clojure-mode)
-      (nomis-electric-clojure-mode)
+  (if (not nomis/ec-mode)
+      (nomis/ec-mode)
     (-nomis/ec-redraw)))
 
 (defun nomis/ec-toggle-debug-show-grammar-tooltips ()
@@ -1637,8 +1639,8 @@ This is very DIY. Is there a better way?")
   "Cycle between combinations of `nomis/ec-color-initial-whitespace?` and
 `nomis/ec-use-underline?`."
   (interactive)
-  (if (not nomis-electric-clojure-mode)
-      (nomis-electric-clojure-mode)
+  (if (not nomis/ec-mode)
+      (nomis/ec-mode)
     ;; If we add more options, can generalise this. But it might not be very
     ;; usable for more than two options -- too many things to cycle through.
     (let* ((v1 (if nomis/ec-color-initial-whitespace? 1 0))
@@ -1659,7 +1661,7 @@ This is very DIY. Is there a better way?")
 
 (defun nomis/ec-report-overlays ()
   (interactive)
-  (-nomis/ec-check-nomis-electric-clojure-mode)
+  (-nomis/ec-check-nomis-ec-mode)
   (let* ((all-ovs (overlays-in (point-min) (point-max)))
          (ovs (cl-remove-if-not (lambda (ov)
                                   (eq 'nomis/ec-overlay

@@ -1,6 +1,6 @@
 # Introduction
 
-This is an Emacs minor mode for [Electric Clojure](https://github.com/hyperfiddle/electric). It colors client and server sites in source code.
+nomis/ec-mode is an Emacs minor mode for [Electric Clojure](https://github.com/hyperfiddle/electric). It colors client and server sites in source code.
 
 Here's an example (code taken from [dir-tree example at Electric v3 tutorial](https://electric.hyperfiddle.net/tutorial/dir_tree)):
 
@@ -13,16 +13,16 @@ See the [Screenshot Gallery](docs/screenshot-gallery.md) for more examples.
 
 ## Prerequisites
 
-nomis-electric-clojure depends on the Emacs libraries listed below. I've been using the versions in parentheses.
+nomis/ec-mode depends on the Emacs libraries listed below. I've been using the versions in parentheses.
 
 - dash (20240510.1327)
 - parseclj (20231203.1905).
 
 I don't know how to package up Emacs libraries — how to specify dependencies etc — so for now you will have to separately make sure that parseclj is available.  (TODO: Improve this.)
 
-## Installing nomis-electric-clojure itself
+## Installing nomis/ec-mode itself
 
-Here are some options for installing nomis-electric-clojure itself:
+Here are some options for installing nomis/ec-mode itself:
 
 ### Option 1
 
@@ -54,14 +54,14 @@ You can specify a particular version using a Git tag like this:
   :ensure t)
 ```
 
-## A Note About Updating nomis-electric-clojure
+## A Note About Updating nomis/ec-mode
 
 When you update `nomis-electric-clojure.el` to a new version, it is safest to restart Emacs rather than just evaluating the new code.
 
 
-# How nomis-electric-clojure Recognises Electric Buffers
+# How nomis/ec-mode Recognises Electric Buffers
 
-nomis-electric-clojure checks for Electric buffers by looking for one of the following near the start:
+nomis/ec-mode checks for Electric buffers by looking for one of the following near the start:
 
   - `[hyperfiddle.electric :as e]` (⇒ Electric v2)
   - `[hyperfiddle.electric3 :as e]` (⇒ Electric v3)
@@ -69,16 +69,16 @@ nomis-electric-clojure checks for Electric buffers by looking for one of the fol
 There's a customizable variable, `nomis/ec-bound-for-electric-require-search` (default 10000), that specifies how many characters into a buffer to search before giving up.
 
 
-# Turning on nomis-electric-clojure-mode
+# Turning on nomis/ec-mode
 
 By default, the mode is turned on automatically for any `.cljc` buffer that is recognised to be Electric source code. You can disable this by customizing `nomis/ec-auto-enable?`.
 
-To turn the mode on or off manually, run `M-x nomis-electric-clojure-mode`. If the mode can't determine the Electric version, it assumes v3.
+To turn the mode on or off manually, run `M-x nomis/ec-mode`. If the mode can't determine the Electric version, it assumes v3.
 
 
 # Overview of Features
 
-nomis-electric-clojure-mode does the following:
+nomis/ec-mode does the following:
 
 - Auto-detects whether the code is Electric v2 or Electric v3. (If auto-detect fails, v3 is assumed.)
 
@@ -93,7 +93,7 @@ The mode analyses each Electric function separately — it does not look at the 
 
 # A Suggestion
 
-The colors of nomis-electric-clojure-mode can make it hard to read your code and any feedback provided by other modes, so you will at least sometimes want to turn it off. You might even choose to generally have the mode off and only turn it on when you want to focus on what's on the client and what's on the server.
+The colors of nomis/ec-mode can make it hard to read your code and any feedback provided by other modes, so you will at least sometimes want to turn it off. You might even choose to generally have the mode off and only turn it on when you want to focus on what's on the client and what's on the server.
 
 In any case it's useful to be able to turn the mode off and on very quickly, so I suggest setting up a keyboard shortcut for this. See the [Keyboard Shortcuts](#keyboard-shortcuts) section.
 
@@ -135,7 +135,7 @@ You can cycle through combinations of `nomis/ec-color-initial-whitespace?` and `
 I use the following keyboard shortcuts:
 
 ```
-(define-key clojure-mode-map (kbd "M-E") 'nomis-electric-clojure-mode)
+(define-key clojure-mode-map (kbd "M-E") 'nomis/ec-mode)
 (define-key clojure-mode-map (kbd "C-M-e") 'nomis/ec-cycle-options)
 ```
 
@@ -144,10 +144,10 @@ I use the following keyboard shortcuts:
 
 ## Version
 
-The constant `nomis/ec-version` contains the version of nomis-electric-clojure-mode, a string.
+The constant `nomis/ec-version` contains the version of nomis/ec-mode, a string.
 
 
-The interactive command `nomis/ec-version` reports nomis-electric-clojure-mode's version in the echo area.
+The interactive command `nomis/ec-version` reports nomis/ec-mode's version in the echo area.
 
 
 # Adding New Parser Specs
@@ -225,7 +225,7 @@ There are two approaches to fixing it:
 I've sometimes seen Emacs overlays get muddled and the coloring flip between being correct and incorrect when I simply change whitespace. I've found that restarting Emacs makes the problem go away. (TODO: That's a bit drastic. Next time it happens: Does it happen in just one buffer? What happens if you kill the buffer and re-open the file?)
 
 
-## nomis-electric-clojure-mode thinks code is v3 but actually it's v2, or vice versa
+## nomis/ec-mode thinks code is v3 but actually it's v2, or vice versa
 
 This can happen in a newly-created file or if the `:require` form in the namespace declaration is changed.
 
@@ -233,7 +233,7 @@ You can re-run the auto-detection of the version in any of the following ways:
 
 - by running `M-x nomis/ec-redetect-electric-version`
 
-- by turning the mode off and then back on (by running `M-x nomis-electric-clojure-mode` twice)
+- by turning the mode off and then back on (by running `M-x nomis/ec-mode` twice)
 
 - by reverting the buffer.
 
