@@ -26,10 +26,10 @@ Here are some options for installing nomis/ec-mode itself:
 
 ### Option 1
 
-Copy the file `nomis-electric-clojure.el` to a place where it will be found by your Emacs and add the following to your init file:
+Copy the file `nomis-ec-mode.el` to a place where it will be found by your Emacs and add the following to your init file:
 
 ```
-  (require 'nomis-electric-clojure)
+  (require 'nomis-ec-mode)
 ```
 
 ### Option 2
@@ -39,8 +39,8 @@ For Emacs 30+...
 For the latest version:
 
 ```
-(use-package nomis-electric-clojure
-  :vc (:url "https://github.com/simon-katz/nomis-electric-clojure-mode"
+(use-package nomis-ec-mode
+  :vc (:url "https://github.com/simon-katz/nomis-ec-mode"
        :rev "newest")
   :ensure t)
 ```
@@ -48,15 +48,15 @@ For the latest version:
 You can specify a particular version using a Git tag like this:
 
 ```
-(use-package nomis-electric-clojure
-  :vc (:url "https://github.com/simon-katz/nomis-electric-clojure-mode"
+(use-package nomis-ec-mode
+  :vc (:url "https://github.com/simon-katz/nomis-ec-mode"
        :rev "v0.4")
   :ensure t)
 ```
 
 ## A Note About Updating nomis/ec-mode
 
-When you update `nomis-electric-clojure.el` to a new version, it is safest to restart Emacs rather than just evaluating the new code.
+When you update `nomis-ec-mode.el` to a new version, it is safest to restart Emacs rather than just evaluating the new code.
 
 
 # How nomis/ec-mode Recognises Electric Buffers
