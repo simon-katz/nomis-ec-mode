@@ -20,11 +20,13 @@ nomis/ec-mode depends on the Emacs libraries listed below. I've been using the v
 
 I don't know how to package up Emacs libraries — how to specify dependencies etc — so for now you will have to separately make sure that parseclj is available.  (TODO: Improve this.)
 
-## Installing nomis/ec-mode itself
+## Installing nomis/ec-mode
 
-Here are some options for installing nomis/ec-mode itself:
+Here are some options for installing nomis/ec-mode:
 
-### Option 1
+### Option 1 — Manual Installation
+
+Note: If you are upgrading from pre-version-0.6, delete your existing `nomis-electric-clojure.el` file.
 
 Copy the file `nomis-ec-mode.el` to a place where it will be found by your Emacs and add the following to your init file:
 
@@ -32,9 +34,11 @@ Copy the file `nomis-ec-mode.el` to a place where it will be found by your Emacs
   (require 'nomis-ec-mode)
 ```
 
-### Option 2
+### Option 2 — Using `use-package`'s VCS Integration
 
-For Emacs 30+...
+For Emacs 30+, you can use `use-package`s VCS integration...
+
+First delete any existing version that you have installed (including under the name `nomis-electric-clojure-mode` for early versions.)
 
 For the latest version:
 

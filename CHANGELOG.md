@@ -2,6 +2,10 @@
 
 ## Version 0.6-SNAPSHOT
 
+- Breaking change: Rename the package as `nomis-ec-mode`.
+  - When upgrading you should delete the old `nomis-electric-clojure.el` file or `nomis-electric-clojure-mode` directory. See the README for details.
+  - Use `(require 'nomis-ec-mode)` instead of `(require 'nomis-electric-clojure)`.
+
 - Add `nomis/ec-version` constant and `nomis/ec-version` interactive command.
 
 - Understand comments.
