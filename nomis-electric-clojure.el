@@ -46,6 +46,16 @@
 
 ;;;; ___________________________________________________________________________
 
+(defconst nomis/ec-version "0.6-SNAPSHOT"
+  "The current version of nomis-electric-clojure-mode.")
+
+(defun nomis/ec-version ()
+  "Display nomis-electric-clojure-mode's version."
+  (interactive)
+  (message "nomis-electric-clojure-mode %s" nomis/ec-version))
+
+;;;; ___________________________________________________________________________
+
 (require 'dash)
 (require 'parseclj)
 

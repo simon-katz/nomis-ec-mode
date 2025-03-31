@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## Version 0.6-SNAPSHOT
+
+- Add `nomis/ec-version` constant and `nomis/ec-version` interactive command.
 
 - Understand comments.
 

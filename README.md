@@ -139,6 +139,17 @@ I use the following keyboard shortcuts:
 (define-key clojure-mode-map (kbd "C-M-e") 'nomis/ec-cycle-options)
 ```
 
+
+# Miscellaneous Other Features
+
+## Version
+
+The constant `nomis/ec-version` contains the version of nomis-electric-clojure-mode, a string.
+
+
+The interactive command `nomis/ec-version` reports nomis-electric-clojure-mode's version in the echo area.
+
+
 # Adding New Parser Specs
 
 The mode provides an extension mechanism.
