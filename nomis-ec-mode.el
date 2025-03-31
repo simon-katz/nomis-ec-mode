@@ -46,7 +46,7 @@
 
 ;;;; ___________________________________________________________________________
 
-(defconst nomis/ec-version "0.6"
+(defconst nomis/ec-version "0.7-SNAPSHOT"
   "The current version of nomis/ec-mode.")
 
 (defun nomis/ec-version ()

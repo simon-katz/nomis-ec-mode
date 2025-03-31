@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.7-SNAPSHOT
+
+- Nothing yet.
+
+
 ## Version 0.6
 
 - Breaking change: Rename the package as `nomis-ec-mode`.
