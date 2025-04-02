@@ -1397,16 +1397,7 @@ Otherwise throw an exception."
          ((-nomis/ec-top-level-of-hosted-call?)
           ;; We've already colored the whole call; we don't need to do
           ;; anything more.
-          ;; TODO: Delete this -- do nothing. (Here for now to match what we
-          ;;       had before a big refactor.)
-          (cond (*-nomis/ec-first-arg?*
-                 (sited 'hosted-call-function-name))
-                ((not (looking-at -nomis/ec-electric-function-name-regexp-incl-symbol-end))
-                 (sited 'hosted-call-ordinary-arg))
-                ((member sym *-nomis/ec-bound-vars*)
-                 (unsited 'local))
-                (t
-                 (unsited 'global))))
+          )
          ;; TODO: Get rid of this. (Here for now to match what we had before
          ;;       a big refactor.)
          ((looking-at -nomis/ec-electric-function-name-regexp-incl-symbol-end)
