@@ -550,6 +550,13 @@ PROPERTY is already in PLIST."
        (= *-nomis/ec-level*
           (1+ *-nomis/enclosing-hosted-call-level*))))
 
+(defvar *-nomis/enclosing-electric-call-level* nil)
+
+(defun -nomis/ec-top-level-of-electric-call? ()
+  (and *-nomis/enclosing-electric-call-level*
+       (= *-nomis/ec-level*
+          (1+ *-nomis/enclosing-electric-call-level*))))
+
 (defvar *-nomis/enclosing-body-level* nil)
 
 (defun -nomis/ec-top-level-of-body? ()
@@ -808,6 +815,16 @@ Otherwise throw an exception."
   ;; Ugh. This shows that some naming is wrong.
   (concat -nomis/ec-electric-function-name-regexp "\\_>"))
 
+(defun -nomis/ec-looking-at-electric-function-name? ()
+  (looking-at -nomis/ec-electric-function-name-regexp-incl-symbol-end))
+
+(defun -nomis/ec-looking-at-electric-call? ()
+  (and (-nomis/ec-looking-at-open-parenthesis?)
+       (save-excursion
+         (nomis/ec-down-list-v3 'open-parenthesis)
+         (-nomis/ec-skip-ignorables)
+         (-nomis/ec-looking-at-electric-function-name?))))
+
 ;;;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 (rx-define -nomis/ec-hosted-function-name-rx
@@ -827,6 +844,18 @@ Otherwise throw an exception."
 
 (defun -nomis/ec-looking-at-hosted-function-name? ()
   (looking-at -nomis/ec-hosted-function-name-regexp-incl-symbol-end))
+
+(defun -nomis/ec-looking-at-hosted-function-operator? ()
+  (or (-nomis/ec-looking-at-hosted-function-name?)
+      (-nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax?)
+      (-nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax?)))
+
+(defun -nomis/ec-looking-at-hosted-call? ()
+  (and (-nomis/ec-looking-at-open-parenthesis?)
+       (save-excursion
+         (nomis/ec-down-list-v3 'open-parenthesis)
+         (-nomis/ec-skip-ignorables)
+         (-nomis/ec-looking-at-hosted-function-operator?))))
 
 ;;;; ___________________________________________________________________________
 ;;;; ---- More parse and overlay helpers ----
@@ -1281,47 +1310,53 @@ Otherwise throw an exception."
 
 ;;;; ___________________________________________________________________________
 
-(defun -nomis/ec-looking-at-hosted-function-operator? ()
-  (or (-nomis/ec-looking-at-hosted-function-name?)
-      (-nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax?)
-      (-nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax?)))
+(defun -nomis/ec-overlay-bracketed-form (tag site)
+  (let* ((electric-call? (eq tag 'electric-call))
+         (hosted-call? (eq tag 'hosted-call))
+         (call? (or electric-call? hosted-call?)))
+    (-nomis/ec-debug-message *-nomis/ec-site* tag)
+    (save-excursion
+      (let* ((*-nomis/enclosing-electric-call-level*
+              (if electric-call?
+                  *-nomis/ec-level*
+                *-nomis/enclosing-electric-call-level*))
+             (*-nomis/enclosing-hosted-call-level*
+              (if hosted-call?
+                  *-nomis/ec-level*
+                *-nomis/enclosing-hosted-call-level*)))
+        (-nomis/ec-with-site (;; avoid-stupid-indentation
+                              :tag (list tag)
+                              :tag-v2 tag
+                              :site site
+                              :description (-> tag
+                                               -nomis/ec->grammar-description))
+          (nomis/ec-down-list-v3 tag)
+          (let* ((arg-count 0))
+            (while (-nomis/ec-skip-then-can-forward-sexp?)
+              (cl-incf arg-count)
+              (let* ((*-nomis/ec-first-arg?* (if call?
+                                                 (= arg-count 1)
+                                               *-nomis/ec-first-arg?*)))
+                (-nomis/ec-walk-and-overlay-v3)
+                (forward-sexp)))))))))
 
-(defun -nomis/ec-overlay-function-call ()
-  (-nomis/ec-debug-message *-nomis/ec-site* 'function-call)
-  (save-excursion
-    (let* ((hosted-call? (save-excursion
-                           (nomis/ec-down-list-v3 'function-call)
-                           (-nomis/ec-skip-ignorables)
-                           (-nomis/ec-looking-at-hosted-function-operator?)))
-           (*-nomis/enclosing-hosted-call-level* (when hosted-call?
-                                                   *-nomis/ec-level*)))
-      (-nomis/ec-with-site (;; avoid-stupid-indentation
-                            :tag (list 'function-call)
-                            :tag-v2 'function-call
-                            :site *-nomis/ec-default-site*
-                            :description (-> 'function-call
-                                             -nomis/ec->grammar-description))
-        (nomis/ec-down-list-v3 'function-call)
-        (let* ((arg-count 0))
-          (while (-nomis/ec-skip-then-can-forward-sexp?)
-            (cl-incf arg-count)
-            (let* ((*-nomis/ec-first-arg?* (= arg-count 1)))
-              (-nomis/ec-walk-and-overlay-v3)
-              (forward-sexp))))))))
+(defun -nomis/ec-overlay-electric-call ()
+  ;; c.f. `-nomis/ec-overlay-hosted-call`.
+  (-nomis/ec-overlay-bracketed-form 'electric-call
+                                    'nec/neutral))
+
+(defun -nomis/ec-overlay-hosted-call ()
+  ;; c.f. `-nomis/ec-overlay-electric-call`
+  (-nomis/ec-overlay-bracketed-form 'hosted-call
+                                    *-nomis/ec-default-site*))
 
 (defun -nomis/ec-overlay-literal-data ()
-  (-nomis/ec-debug-message *-nomis/ec-site* 'literal-data)
-  (save-excursion
-    (-nomis/ec-with-site (;; avoid-stupid-indentation
-                          :tag (list 'literal-data)
-                          :tag-v2 'literal-data
-                          :site *-nomis/ec-default-site*
-                          :description (-> 'literal-data
-                                           -nomis/ec->grammar-description))
-      (nomis/ec-down-list-v3 'literal-data)
-      (while (-nomis/ec-skip-then-can-forward-sexp?)
-        (-nomis/ec-walk-and-overlay-v3)
-        (forward-sexp)))))
+  (-nomis/ec-overlay-bracketed-form 'literal-data
+                                    *-nomis/ec-default-site*))
+
+(defun -nomis/ec-overlay-other-bracketed-form ()
+  (-nomis/ec-overlay-bracketed-form 'other-bracketed-form
+                                    *-nomis/ec-default-site*))
 
 (defun -nomis/ec-overlay-scalar-or-quoted-form ()
   (-nomis/ec-debug-message *-nomis/ec-site* 'scalar-or-quoted-form)
@@ -1338,34 +1373,59 @@ Otherwise throw an exception."
              (sited (tag)
                (use-site tag *-nomis/ec-default-site*))
              (unsited (tag)
-               (use-site tag 'nec/neutral)))
-    (let* ((sym (thing-at-point 'symbol t)))
-      (cond ((looking-at "'")
-             (sited 'quoted-form))
-            ((thing-at-point 'string t)
-             (sited 'string))
-            ((thing-at-point 'number t)
-             (sited 'number))
-            ((and sym (equal ":" (substring sym 0 1)))
-             (sited 'keyword))
-            ((looking-at -nomis/ec-electric-function-name-regexp-incl-symbol-end)
-             (unsited 'electric-function-name))
-            ((-nomis/ec-top-level-of-hosted-call?)
-             (sited (if *-nomis/ec-first-arg?*
-                        'hosted-call-function-name
-                      'hosted-call-arg)))
-            ((-nomis/ec-top-level-of-body?)
-             (sited 'top-level-of-body))
-            (t
-             (if sym
-                 (if (member sym *-nomis/ec-bound-vars*)
-                     (unsited 'local)
-                   (sited 'global))
-               ;; Highlight anything we aren't dealing with.
+               (use-site tag 'nec/neutral))
+             (unhandled ()
                (-nomis/ec-overlay-unparsable (point)
                                              (-nomis/ec-pos-end-of-form)
                                              'unhandled-thing
-                                             "unhandled-thing")))))))
+                                             "unhandled-thing")))
+    (let* ((sym (thing-at-point 'symbol t)))
+      (if (null sym)
+          (cond
+           ((thing-at-point 'string t)
+            (sited 'string))
+           (t
+            ;; If we ever get here something is missing.
+            (unhandled)))
+        (cond
+         ((looking-at "'")
+          (sited 'quoted-form))
+         ((thing-at-point 'number t)
+          (sited 'number))
+         ((and sym (equal ":" (substring sym 0 1)))
+          (sited 'keyword))
+         ((-nomis/ec-top-level-of-hosted-call?)
+          ;; We've already colored the whole call; we don't need to do
+          ;; anything more.
+          ;; TODO: Delete this -- do nothing. (Here for now to match what we
+          ;;       had before a big refactor.)
+          (cond (*-nomis/ec-first-arg?*
+                 (sited 'hosted-call-function-name))
+                ((not (looking-at -nomis/ec-electric-function-name-regexp-incl-symbol-end))
+                 (sited 'hosted-call-ordinary-arg))
+                ((member sym *-nomis/ec-bound-vars*)
+                 (unsited 'local))
+                (t
+                 (unsited 'global))))
+         ;; TODO: Get rid of this. (Here for now to match what we had before
+         ;;       a big refactor.)
+         ((looking-at -nomis/ec-electric-function-name-regexp-incl-symbol-end)
+          (unsited 'electric-function-name))
+         ((-nomis/ec-top-level-of-electric-call?)
+          (cond (*-nomis/ec-first-arg?*
+                 (sited 'electric-call-function-name))
+                ((member sym *-nomis/ec-bound-vars*)
+                 (unsited 'electric-call-arg-local))
+                (t
+                 (sited 'electric-call-arg-global))))
+         ((-nomis/ec-top-level-of-body?)
+          (sited 'top-level-of-body))
+         (t
+          (if (member sym *-nomis/ec-bound-vars*)
+              (unsited 'local)
+            (sited 'global))))))))
+
+;;;; ___________________________________________________________________________
 
 (defvar -nomis/ec-regexp->parser-spec '())
 
@@ -1438,8 +1498,12 @@ Otherwise throw an exception."
                           (apply #'-nomis/ec-overlay-using-parser-spec spec)
                           t))
         (cond
+         ((-nomis/ec-looking-at-hosted-call?)
+          (-nomis/ec-overlay-hosted-call))
+         ((-nomis/ec-looking-at-electric-call?)
+          (-nomis/ec-overlay-electric-call))
          ((-nomis/ec-looking-at-open-parenthesis?)
-          (-nomis/ec-overlay-function-call))
+          (-nomis/ec-overlay-other-bracketed-form))
          ((-nomis/ec-looking-at-start-of-literal-data?)
           (-nomis/ec-overlay-literal-data))
          ((or (-nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax?)
@@ -1810,14 +1874,6 @@ This is very DIY. Is there a better way?")
                                             (let-bindings :site nec/neutral
                                                           :rhs-site nec/client)
                                             &body)))
-
-  (nomis/ec-add-parser-spec `(
-                              :operator-id :electric-call
-                              :operator    ,-nomis/ec-electric-function-name-regexp
-                              :regexp?     t
-                              :site        nec/neutral
-                              :terms       (operator
-                                            &args)))
 
   (nomis/ec-add-parser-spec '(
                               :operator-id :electric-lambda-in-fun-position
