@@ -355,16 +355,16 @@ PROPERTY is already in PLIST."
 (defun -nomis/ec-looking-at-start-of-form-to-descend-v2? ()
   (looking-at -nomis/ec-regexp-for-start-of-form-to-descend-v2))
 
-(defun -nomis/ec-looking-at-open-parenthesis ()
+(defun -nomis/ec-looking-at-open-parenthesis? ()
   (looking-at "("))
 
 (defvar -nomis/ec-regexp-for-hosted-anonymous-fn-fn-syntax
   (-nomis/ec-operator-call-regexp "fn"))
 
-(defun -nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax ()
+(defun -nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax? ()
   (looking-at -nomis/ec-regexp-for-hosted-anonymous-fn-fn-syntax))
 
-(defun -nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax ()
+(defun -nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax? ()
   (looking-at "#("))
 
 (defvar -nomis/ec-regexp-for-start-of-literal-data
@@ -378,7 +378,7 @@ PROPERTY is already in PLIST."
   (looking-at -nomis/ec-regexp-for-start-of-literal-data))
 
 (defun -nomis/ec-looking-at-start-of-form-to-descend-v3? ()
-  (or (-nomis/ec-looking-at-open-parenthesis)
+  (or (-nomis/ec-looking-at-open-parenthesis?)
       (-nomis/ec-looking-at-start-of-literal-data?)))
 
 (defun -nomis/ec-at-top-level? ()
@@ -825,7 +825,7 @@ Otherwise throw an exception."
   ;; Ugh. This shows that some naming is wrong.
   (concat -nomis/ec-hosted-function-name-regexp "\\_>"))
 
-(defun -nomis/ec-looking-at-hosted-function-name ()
+(defun -nomis/ec-looking-at-hosted-function-name? ()
   (looking-at -nomis/ec-hosted-function-name-regexp-incl-symbol-end))
 
 ;;;; ___________________________________________________________________________
@@ -1282,9 +1282,9 @@ Otherwise throw an exception."
 ;;;; ___________________________________________________________________________
 
 (defun -nomis/ec-looking-at-hosted-function-operator? ()
-  (or (-nomis/ec-looking-at-hosted-function-name)
-      (-nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax)
-      (-nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax)))
+  (or (-nomis/ec-looking-at-hosted-function-name?)
+      (-nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax?)
+      (-nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax?)))
 
 (defun -nomis/ec-overlay-function-call ()
   (-nomis/ec-debug-message *-nomis/ec-site* 'function-call)
@@ -1438,12 +1438,12 @@ Otherwise throw an exception."
                           (apply #'-nomis/ec-overlay-using-parser-spec spec)
                           t))
         (cond
-         ((-nomis/ec-looking-at-open-parenthesis)
+         ((-nomis/ec-looking-at-open-parenthesis?)
           (-nomis/ec-overlay-function-call))
          ((-nomis/ec-looking-at-start-of-literal-data?)
           (-nomis/ec-overlay-literal-data))
-         ((or (-nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax)
-              (-nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax))
+         ((or (-nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax?)
+              (-nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax?))
           ;; Not Electric -- do nothing.
           )
          (t
