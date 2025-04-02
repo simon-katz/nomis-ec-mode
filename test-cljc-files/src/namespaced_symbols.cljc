@@ -8,11 +8,13 @@
 
 (e/defn ElectricCall [& _])
 
-(e/defn Foo [x]
+(def global-1 42)
+
+(e/defn Foo [local-1]
   (e/server
-   (hosted-call x)
-   (ElectricCall x)
-   (other-namespace-1/hosted-call x)
-   (other-namespace-1/ElectricCall x)
-   (Other-namespace-2/hosted-call x)
-   (Other-namespace-2/ElectricCall x)))
+   (hosted-call global-1 local-1)
+   (ElectricCall global-1 local-1)
+   (other-namespace-1/hosted-call global-1 local-1)
+   (other-namespace-1/ElectricCall global-1 local-1)
+   (Other-namespace-2/hosted-call global-1 local-1)
+   (Other-namespace-2/ElectricCall global-1 local-1)))
