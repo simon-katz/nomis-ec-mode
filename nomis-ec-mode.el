@@ -628,6 +628,7 @@ PROPERTY is already in PLIST."
                       start)))
               (overlay start end))
           (save-excursion
+            (goto-char start)
             (while (< (point) end)
               (let* ((start-2 (point))
                      (end-2 (min end
@@ -703,7 +704,7 @@ Otherwise throw an exception."
                     (backward-char)
                     (point))))
 
-(defun -nomis/ec-with-site* (tag-v2 tag site end description print-env? f)
+(defun -nomis/ec-with-site* (tag-v2 tag site start end description print-env? f)
   (cl-assert tag)
   (cl-assert tag-v2)
   (-nomis/ec-debug-message site tag-v2 nil print-env?)
@@ -712,7 +713,7 @@ Otherwise throw an exception."
          (no-new-overlay? (or (null site)
                               (and (eq site *-nomis/ec-site*)
                                    (not nomis/ec-show-grammar-tooltips?))))
-         (start (point))
+         (start (or start (point)))
          (end (or end
                   (save-excursion (when (-nomis/ec-skip-then-can-forward-sexp?)
                                     (forward-sexp))
@@ -735,10 +736,10 @@ Otherwise throw an exception."
         (funcall f)))))
 
 (cl-defmacro -nomis/ec-with-site ((&key tag-v2
-                                        tag site end description print-env?)
+                                        tag site start end description print-env?)
                                   &body body)
   (declare (indent 1))
-  `(-nomis/ec-with-site* ,tag-v2 ,tag ,site ,end ,description ,print-env?
+  `(-nomis/ec-with-site* ,tag-v2 ,tag ,site ,start ,end ,description ,print-env?
                          (lambda () ,@body)))
 
 (defun -nomis/ec-transmogrify-site (site inherited-site)
