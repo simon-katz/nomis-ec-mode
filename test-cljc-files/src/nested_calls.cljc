@@ -3,27 +3,52 @@
    [hyperfiddle.electric-dom3 :as dom]
    [hyperfiddle.electric3 :as e]))
 
-(defn hosted-call [x]
-  (println "hosted-call" x)
-  x)
+(defn hosted-call [& args]
+  (println "hosted-call" args)
+  args)
 
-(e/defn ElectricCall [x]
-  (let [PrintInfo (e/fn [xx]
-                    (dom/div (dom/text "ElectricCall " xx))
-                    (println "ElectricCall" xx))]
-    (PrintInfo x)
-    (e/client (PrintInfo x))
-    (e/server (PrintInfo x)))
-  x)
+(e/defn ElectricCall [& args]
+  (let [PrintInfo (e/fn [x]
+                    (dom/div (dom/text "ElectricCall " x))
+                    (println "ElectricCall" x))]
+    (PrintInfo args)
+    (e/client (PrintInfo args))
+    (e/server (PrintInfo args)))
+  args)
 
-(e/defn Main* [a b c d e f]
-  (hosted-call (ElectricCall (hosted-call a)))
-  (e/client (hosted-call (ElectricCall (hosted-call b))))
-  (e/server (hosted-call (ElectricCall (hosted-call c))))
-  ;;
-  (ElectricCall (hosted-call (ElectricCall d)))
-  (e/client (ElectricCall (hosted-call (ElectricCall e))))
-  (e/server (ElectricCall (hosted-call (ElectricCall f)))))
+(def global-1 42)
+
+(e/defn Main* [local-1]
+  (hosted-call global-1
+               local-1
+               (ElectricCall global-1
+                             local-1)
+               (e/server (ElectricCall global-1
+                                       local-1)))
+  (ElectricCall global-1
+                local-1
+                (hosted-call global-1
+                             local-1)
+                (e/server (ElectricCall global-1
+                                        local-1)))
+  (e/server (hosted-call global-1
+                         (hosted-call global-1
+                                      local-1
+                                      (ElectricCall global-1
+                                                    local-1))
+                         (ElectricCall global-1
+                                       local-1
+                                       (hosted-call global-1
+                                                    local-1))))
+  (e/server (ElectricCall global-1
+                          (hosted-call global-1
+                                       local-1
+                                       (ElectricCall global-1
+                                                     local-1))
+                          (ElectricCall global-1
+                                        local-1
+                                        (hosted-call global-1
+                                                     local-1)))))
 
 (e/defn Main []
-  (Main* 1 2 3 4 5 6))
+  (Main* :x))
