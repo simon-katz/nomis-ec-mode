@@ -456,7 +456,7 @@ PROPERTY is already in PLIST."
                                                          (point))
                                                        (-nomis/ec-pos-close-bracket)
                                                        'missing-form-for-comment
-                                                       "missing-form-for-comment"))))))
+                                                       "Missing form for #_ comment"))))))
     (helper 0))
   (when (-nomis/ec-internal-can-forward-sexp?)
     (-nomis/ec-show-place-for-metadata)))
