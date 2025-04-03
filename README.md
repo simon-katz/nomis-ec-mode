@@ -169,7 +169,6 @@ For a taste, here are some examples of built-in parser definitions:
                             :operator              "e/client"
                             :site                  nec/client
                             :new-default-site      nec/client
-                            :site-electric-locals? t
                             :terms                 (operator
                                                     &body)))
 
@@ -177,7 +176,6 @@ For a taste, here are some examples of built-in parser definitions:
                             :operator              "e/server"
                             :site                  nec/server
                             :new-default-site      nec/server
-                            :site-electric-locals? t
                             :terms                 (operator
                                                     &body)))
 

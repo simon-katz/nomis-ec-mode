@@ -4,6 +4,7 @@
 
 - No change in functionality, but update some docs:
   - Update screenshots
+  - Update examples of built-in parser definitions in README
 
 
 ## Version 0.7
