@@ -2,7 +2,8 @@
 
 ## Version 0.8-SNAPSHOT
 
-- Nothing yet.
+- No change in functionality, but update some docs:
+  - Update screenshots
 
 
 ## Version 0.7
