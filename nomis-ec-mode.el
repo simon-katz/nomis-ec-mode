@@ -364,6 +364,13 @@ PROPERTY is already in PLIST."
 (defun -nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax? ()
   (looking-at -nomis/ec-regexp-for-hosted-anonymous-fn-fn-syntax))
 
+(defvar -nomis/ec-regexp-for-electric-fn-in-operator-position
+  (-nomis/ec-operator-call-regexp "(e/fn") ; Note the open parenthesis.
+  )
+
+(defun -nomis/ec-looking-at-electric-fn-in-operator-position ()
+  (looking-at -nomis/ec-regexp-for-electric-fn-in-operator-position))
+
 (defun -nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax? ()
   (looking-at "#("))
 
@@ -1508,6 +1515,19 @@ Otherwise throw an exception."
 (defun -nomis/ec-overlay-literal-data ()
   (-nomis/ec-overlay-other-bracketed-form* 'literal-data))
 
+(defun -nomis/ec-overlay-electric-fn-in-operator-position ()
+  (save-excursion
+    (let* ((start (progn (nomis/ec-down-list-v3
+                          'electric-fn-not-allowed-in-operator-position)
+                         (point)))
+           (end (progn (forward-sexp)
+                       (point))))
+      (-nomis/ec-overlay-unparsable
+       start
+       end
+       'electric-fn-not-allowed-in-operator-position
+       "Electric fn not allowed in operator position"))))
+
 (defun -nomis/ec-overlay-scalar-or-quoted-form ()
   (-nomis/ec-debug-message *-nomis/ec-site* 'scalar-or-quoted-form)
   (cl-flet* ((use-site (tag site)
@@ -1577,6 +1597,8 @@ Otherwise throw an exception."
           (-nomis/ec-overlay-hosted-call))
          ((-nomis/ec-looking-at-electric-call?)
           (-nomis/ec-overlay-electric-call))
+         ((-nomis/ec-looking-at-electric-fn-in-operator-position)
+          (-nomis/ec-overlay-electric-fn-in-operator-position))
          ((-nomis/ec-looking-at-open-parenthesis?)
           (-nomis/ec-overlay-other-bracketed-form))
          ((-nomis/ec-looking-at-start-of-literal-data?)
@@ -1950,14 +1972,7 @@ This is very DIY. Is there a better way?")
                               :terms       (operator
                                             (let-bindings :site nec/neutral
                                                           :rhs-site nec/client)
-                                            &body)))
-
-  (nomis/ec-add-parser-spec '(
-                              :operator-id :electric-lambda-in-fun-position
-                              :operator    "(e/fn" ; Note the open parenthesis here, for lambda in function position.
-                              :site        nec/neutral
-                              :terms       (operator
-                                            &args))))
+                                            &body))))
 
 (-nomis/ec-add-built-in-parser-specs)
 

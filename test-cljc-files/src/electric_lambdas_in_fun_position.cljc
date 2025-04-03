@@ -36,6 +36,7 @@
      local-1)))
 
 (e/defn Foo3 [local-1]
+  ;; We don't detect this.
   ((e/client
      (e/fn [local-2 local-3]
        (ElectricCall global-1 local-1 local-2 local-3)
