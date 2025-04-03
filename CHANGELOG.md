@@ -2,7 +2,11 @@
 
 ## Version 0.7-SNAPSHOT
 
-- Nothing yet.
+- Site the parentheses and the operator of Electric calls.
+
+- Site all scalar hosted call args.
+
+- Give error feedback for `(e/fn ...)` in operator position.
 
 
 ## Version 0.6
