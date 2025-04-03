@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.8-SNAPSHOT
+## Version 0.8
 
 - No change in functionality, but update some docs:
   - Update screenshots
