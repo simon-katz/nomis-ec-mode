@@ -1311,66 +1311,138 @@ Otherwise throw an exception."
 
 ;;;; ___________________________________________________________________________
 
-(defun -nomis/ec-overlay-bracketed-form (tag)
-  ;; TODO: Perhaps this has gotten over-complicated -- perhaps the callers
-  ;;       should all just do their own thing.
-  (let* ((electric-call? (eq tag 'electric-call))
-         (hosted-call? (eq tag 'hosted-call))
-         (call? (or electric-call? hosted-call?)))
-    (-nomis/ec-debug-message *-nomis/ec-site* tag)
-    (save-excursion
-      (cl-flet* ((do-it (site start end)
-                   (let* ((*-nomis/enclosing-electric-call-level*
-                           (if electric-call?
-                               *-nomis/ec-level*
-                             *-nomis/enclosing-electric-call-level*))
-                          (*-nomis/enclosing-hosted-call-level*
-                           (if hosted-call?
-                               *-nomis/ec-level*
-                             *-nomis/enclosing-hosted-call-level*)))
-                     (-nomis/ec-with-site (;; avoid-stupid-indentation
-                                           :tag (list tag)
-                                           :tag-v2 tag
-                                           :site site
-                                           :start start
-                                           :end end
-                                           :description (-> tag
-                                                            -nomis/ec->grammar-description))
-                       (nomis/ec-down-list-v3 tag)
-                       (let* ((arg-count 0))
-                         (while (-nomis/ec-skip-then-can-forward-sexp?)
-                           (cl-incf arg-count)
-                           (let* ((*-nomis/ec-first-arg?* (if call?
-                                                              (= arg-count 1)
-                                                            *-nomis/ec-first-arg?*)))
-                             (-nomis/ec-walk-and-overlay-v3)
-                             (forward-sexp))))))))
-        (if electric-call?
-            (let* ((tag (list 'outer tag)))
-              (-nomis/ec-with-site (;; avoid-stupid-indentation
-                                    :tag (list tag)
-                                    :tag-v2 tag
-                                    :site *-nomis/ec-default-site*
-                                    :description (-> tag
-                                                     -nomis/ec->grammar-description))
-                (do-it 'nec/neutral
-                       (1+ (point))
-                       (1- (-nomis/ec-pos-end-of-form)))))
-          (do-it *-nomis/ec-default-site*
-                 nil
-                 nil))))))
 
-(defun -nomis/ec-overlay-electric-call ()
-  (-nomis/ec-overlay-bracketed-form 'electric-call))
+;; Old `-nomis/ec-overlay-bracketed-form` and callers. We've decided to make the
+;; callers all do their own thing instead of having this.
+
+;; (defun -nomis/ec-overlay-bracketed-form (tag)
+;;   (let* ((electric-call? (eq tag 'electric-call))
+;;          (hosted-call? (eq tag 'hosted-call))
+;;          (call? (or electric-call? hosted-call?)))
+;;     (-nomis/ec-debug-message *-nomis/ec-site* tag)
+;;     (save-excursion
+;;       (cl-flet* ((do-it (site start end)
+;;                    (let* ((*-nomis/enclosing-electric-call-level*
+;;                            (if electric-call?
+;;                                *-nomis/ec-level*
+;;                              *-nomis/enclosing-electric-call-level*))
+;;                           (*-nomis/enclosing-hosted-call-level*
+;;                            (if hosted-call?
+;;                                *-nomis/ec-level*
+;;                              *-nomis/enclosing-hosted-call-level*)))
+;;                      (-nomis/ec-with-site (;; avoid-stupid-indentation
+;;                                            :tag (list tag)
+;;                                            :tag-v2 tag
+;;                                            :site site
+;;                                            :start start
+;;                                            :end end
+;;                                            :description (-> tag
+;;                                                             -nomis/ec->grammar-description))
+;;                        (nomis/ec-down-list-v3 tag)
+;;                        (let* ((arg-count 0))
+;;                          (while (-nomis/ec-skip-then-can-forward-sexp?)
+;;                            (cl-incf arg-count)
+;;                            (let* ((*-nomis/ec-first-arg?* (if call?
+;;                                                               (= arg-count 1)
+;;                                                             *-nomis/ec-first-arg?*)))
+;;                              (-nomis/ec-walk-and-overlay-v3)
+;;                              (forward-sexp))))))))
+;;         (if electric-call?
+;;             (let* ((tag (list 'outer tag)))
+;;               (-nomis/ec-with-site (;; avoid-stupid-indentation
+;;                                     :tag (list tag)
+;;                                     :tag-v2 tag
+;;                                     :site *-nomis/ec-default-site*
+;;                                     :description (-> tag
+;;                                                      -nomis/ec->grammar-description))
+;;                 (do-it 'nec/neutral
+;;                        (1+ (point))
+;;                        (1- (-nomis/ec-pos-end-of-form)))))
+;;           (do-it *-nomis/ec-default-site*
+;;                  nil
+;;                  nil))))))
+
+;; (defun -nomis/ec-overlay-electric-call ()
+;;   (-nomis/ec-overlay-bracketed-form 'electric-call))
+
+;; (defun -nomis/ec-overlay-hosted-call ()
+;;   (-nomis/ec-overlay-bracketed-form 'hosted-call))
+
+;; (defun -nomis/ec-overlay-literal-data ()
+;;   (-nomis/ec-overlay-bracketed-form 'literal-data))
+
+;; (defun -nomis/ec-overlay-other-bracketed-form ()
+;;   (-nomis/ec-overlay-bracketed-form 'other-bracketed-form))
+
+;;;; ___________________________________________________________________________
 
 (defun -nomis/ec-overlay-hosted-call ()
-  (-nomis/ec-overlay-bracketed-form 'hosted-call))
+  (save-excursion
+    (let* ((tag 'hosted-call))
+      (-nomis/ec-debug-message *-nomis/ec-site* tag)
+      (let* ((*-nomis/enclosing-hosted-call-level* *-nomis/ec-level*))
+        (-nomis/ec-with-site (;; avoid-stupid-indentation
+                              :tag (list tag)
+                              :tag-v2 tag
+                              :site *-nomis/ec-default-site*
+                              :description (-> tag
+                                               -nomis/ec->grammar-description))
+          (nomis/ec-down-list-v3 tag)
+          (let* ((arg-count 0))
+            (while (-nomis/ec-skip-then-can-forward-sexp?)
+              (cl-incf arg-count)
+              (let* ((*-nomis/ec-first-arg?* (= arg-count 1)))
+                (-nomis/ec-walk-and-overlay-v3)
+                (forward-sexp)))))))))
 
-(defun -nomis/ec-overlay-literal-data ()
-  (-nomis/ec-overlay-bracketed-form 'literal-data))
+(defun -nomis/ec-overlay-electric-call ()
+  (save-excursion
+    (let* ((tag 'electric-call)
+           (outer-tag (list 'outer tag)))
+      (-nomis/ec-debug-message *-nomis/ec-site* outer-tag)
+      (-nomis/ec-with-site (;; avoid-stupid-indentation
+                            :tag (list outer-tag)
+                            :tag-v2 outer-tag
+                            :site *-nomis/ec-default-site*
+                            :description (-> outer-tag
+                                             -nomis/ec->grammar-description))
+        (let* ((*-nomis/enclosing-electric-call-level* *-nomis/ec-level*))
+          (-nomis/ec-debug-message *-nomis/ec-site* tag)
+          (-nomis/ec-with-site (;; avoid-stupid-indentation
+                                :tag (list tag)
+                                :tag-v2 tag
+                                :site 'nec/neutral
+                                :start (1+ (point))
+                                :end (1- (-nomis/ec-pos-end-of-form))
+                                :description (-> tag
+                                                 -nomis/ec->grammar-description))
+            (nomis/ec-down-list-v3 tag)
+            (let* ((arg-count 0))
+              (while (-nomis/ec-skip-then-can-forward-sexp?)
+                (cl-incf arg-count)
+                (let* ((*-nomis/ec-first-arg?* (= arg-count 1)))
+                  (-nomis/ec-walk-and-overlay-v3)
+                  (forward-sexp))))))))))
+
+(defun -nomis/ec-overlay-other-bracketed-form* (tag)
+  (save-excursion
+    (-nomis/ec-debug-message *-nomis/ec-site* tag)
+    (-nomis/ec-with-site (;; avoid-stupid-indentation
+                          :tag (list tag)
+                          :tag-v2 tag
+                          :site *-nomis/ec-default-site*
+                          :description (-> tag
+                                           -nomis/ec->grammar-description))
+      (nomis/ec-down-list-v3 tag)
+      (while (-nomis/ec-skip-then-can-forward-sexp?)
+        (-nomis/ec-walk-and-overlay-v3)
+        (forward-sexp)))))
 
 (defun -nomis/ec-overlay-other-bracketed-form ()
-  (-nomis/ec-overlay-bracketed-form 'other-bracketed-form))
+  (-nomis/ec-overlay-other-bracketed-form* 'other-bracketed-form))
+
+(defun -nomis/ec-overlay-literal-data ()
+  (-nomis/ec-overlay-other-bracketed-form* 'literal-data))
 
 (defun -nomis/ec-overlay-scalar-or-quoted-form ()
   (-nomis/ec-debug-message *-nomis/ec-site* 'scalar-or-quoted-form)
