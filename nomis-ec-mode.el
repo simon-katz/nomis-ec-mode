@@ -1526,7 +1526,7 @@ Otherwise throw an exception."
        start
        end
        'electric-fn-not-allowed-in-operator-position
-       "Electric fn not allowed in operator position"))))
+       "e/fn not allowed in operator position"))))
 
 (defun -nomis/ec-overlay-scalar-or-quoted-form ()
   (-nomis/ec-debug-message *-nomis/ec-site* 'scalar-or-quoted-form)
