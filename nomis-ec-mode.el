@@ -174,6 +174,7 @@ specifically server code, when `-nomis/ec-show-debug-overlays?` is true.")
 (define-error '-nomis/ec-parse-error "nomis/ec-mode: Cannot parse")
 
 ;;;; ___________________________________________________________________________
+;;;; Computing and updating faces
 
 (defun -nomis/ec-compute-client-face ()
   (if nomis/ec-use-underline?
@@ -236,11 +237,13 @@ specifically server code, when `-nomis/ec-show-debug-overlays?` is true.")
                       (-nomis/ec-compute-unparsable-face)))
 
 ;;;; ___________________________________________________________________________
+;;;; Version
 
 (defvar -nomis/ec-electric-version)
 (make-variable-buffer-local '-nomis/ec-electric-version)
 
 ;;;; ___________________________________________________________________________
+;;;; Some helpers
 
 (defun -nomis/ec-message-no-disp (format-string &rest args)
   (let* ((inhibit-message t))
@@ -314,8 +317,8 @@ specifically server code, when `-nomis/ec-show-debug-overlays?` is true.")
           "\\_>"))
 
 ;;;; ___________________________________________________________________________
-;;;; Some utilities copied from `nomis-sexp-utils` and other places. (I don't
-;;;; want to make this package dependent on those.)
+;;;; Some utilities copied from `nomis-sexp-utils` and other places, and some
+;;;; new ones. (I don't want to make this package dependent on those.)
 
 (defun -nomis/ec-reporting-non-local-exit* (msg f)
   ;; In preference to catch and rethrow which gives the rethrowing context in
@@ -535,6 +538,7 @@ PROPERTY is already in PLIST."
                      (delete-overlay flash-overlay-2))))))
 
 ;;;; ___________________________________________________________________________
+;;;; Special vars
 
 (defvar *-nomis/ec-n-lumps-in-current-update* 0)
 
@@ -1128,6 +1132,7 @@ Otherwise throw an exception."
       (forward-sexp))))
 
 ;;;; ___________________________________________________________________________
+;;;; nomis/ec-add-parser-spec
 
 (defvar -nomis/ec-regexp->parser-spec '())
 
@@ -1446,6 +1451,7 @@ Otherwise throw an exception."
 ;;   (-nomis/ec-overlay-bracketed-form 'other-bracketed-form))
 
 ;;;; ___________________________________________________________________________
+;;;; High-level walking and overlaying for v3
 
 (defun -nomis/ec-overlay-hosted-call ()
   (save-excursion
@@ -1611,6 +1617,7 @@ Otherwise throw an exception."
           (-nomis/ec-overlay-scalar-or-quoted-form))))))
 
 ;;;; ___________________________________________________________________________
+;;;; -nomis/ec-walk-and-overlay-any-version
 
 (defun -nomis/ec-walk-and-overlay-any-version ()
   (cond ; See avoid-case-bug-with-keywords at top of file.
@@ -1620,6 +1627,9 @@ Otherwise throw an exception."
     (-nomis/ec-walk-and-overlay-v3))
    (t (error "Bad case: -nomis/ec-electric-version: %s"
              -nomis/ec-electric-version))))
+
+;;;; ___________________________________________________________________________
+;;;; Checking Electric version
 
 (defun -nomis/ec-buffer-has-text? (s)
   (save-excursion (goto-char 0)
@@ -1650,6 +1660,9 @@ Otherwise throw an exception."
     ;;          (string-replace ":" "" (symbol-name v)))
     ))
 
+;;;; ___________________________________________________________________________
+;;;; -nomis/ec-overlay-region
+
 (defun -nomis/ec-overlay-region (start end)
   (when -nomis/ec-print-debug-info-to-messages-buffer?
     (-nomis/ec-message-no-disp "________________________________")
@@ -1677,6 +1690,7 @@ Otherwise throw an exception."
       `(jit-lock-bounds ,start-2 . ,end-2))))
 
 ;;;; ___________________________________________________________________________
+;;;; The mode
 
 (defvar -nomis/ec-buffers '()
   "A list of all buffers where `nomis/ec-mode` is turned on.
