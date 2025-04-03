@@ -1121,6 +1121,70 @@ Otherwise throw an exception."
       (forward-sexp))))
 
 ;;;; ___________________________________________________________________________
+
+(defvar -nomis/ec-regexp->parser-spec '())
+
+;; Some useful things for debugging:
+
+;; (length -nomis/ec-regexp->parser-spec)
+
+;; (mapcar (lambda (entry) (-> entry cdr (plist-get :operator-id)))
+;;         -nomis/ec-regexp->parser-spec)
+
+;; (nth 3 -nomis/ec-regexp->parser-spec)
+
+(cl-defun nomis/ec-add-parser-spec ((&whole spec-and-other-bits
+                                            &key
+                                            operator-id
+                                            operator
+                                            regexp?
+                                            site
+                                            new-default-site
+                                            terms))
+  "Add a spec for parsing Elecric Clojure code.
+
+- See uses at the end of this file for the built-in parsers.
+
+- OPERATOR can be an ordinary string or a regexp. This is controlled
+  by REGEXP?.
+
+- OPERATOR-ID defaults to OPERATOR. When REGEXP? is true
+  OPERATOR-ID must be supplied.
+
+- Order is important -- first match wins.
+
+- If there is an existing entry for the same OPERATOR, it is replaced;
+  otherwise a new entry is added at the end. New entries are created
+  at the end so that the (likely) most common operators (the built-in
+  ones) are found quickly to get efficient look-ups.
+
+- If you are developing new parsers you can end up with a different
+  order to when you reload from scratch. The function
+  NOMIS/EC-RESET-TO-BUILT-IN-PARSER-SPECS will be useful."
+  (cl-assert (symbolp operator-id) t)
+  (cl-assert (stringp operator) t)
+  (cl-assert (member new-default-site '(nil nec/client nec/server)) t)
+  (let* ((operator-regexp (if regexp? operator (regexp-quote operator)))
+         (regexp (-nomis/ec-operator-call-regexp operator-regexp))
+         (spec (-> spec-and-other-bits
+                   (-nomis/ec-plist-remove :operator)
+                   (-nomis/ec-plist-remove :regexp?)))
+         (new-entry (cons regexp spec)))
+    (let* ((existing-operator-id? nil))
+      (setq -nomis/ec-regexp->parser-spec
+            (cl-loop
+             for old-entry in -nomis/ec-regexp->parser-spec
+             collect (cl-destructuring-bind (regexp . spec) old-entry
+                       (if (equal operator-id (plist-get spec :operator-id))
+                           (progn (setq existing-operator-id? t)
+                                  new-entry)
+                         old-entry))))
+      (unless existing-operator-id?
+        (setq -nomis/ec-regexp->parser-spec
+              (append -nomis/ec-regexp->parser-spec
+                      (list new-entry)))))))
+
+;;;; ___________________________________________________________________________
 ;;;; ---- -nomis/ec-term-name->end ----
 
 ;;;; This could be simpler, but we want something that gives an error if
@@ -1500,70 +1564,6 @@ Otherwise throw an exception."
               (unsited 'local)
             (sited 'global))))))))
 
-;;;; ___________________________________________________________________________
-
-(defvar -nomis/ec-regexp->parser-spec '())
-
-;; Some useful things for debugging:
-
-;; (length -nomis/ec-regexp->parser-spec)
-
-;; (mapcar (lambda (entry) (-> entry cdr (plist-get :operator-id)))
-;;         -nomis/ec-regexp->parser-spec)
-
-;; (nth 3 -nomis/ec-regexp->parser-spec)
-
-(cl-defun nomis/ec-add-parser-spec ((&whole spec-and-other-bits
-                                            &key
-                                            operator-id
-                                            operator
-                                            regexp?
-                                            site
-                                            new-default-site
-                                            terms))
-  "Add a spec for parsing Elecric Clojure code.
-
-- See uses at the end of this file for the built-in parsers.
-
-- OPERATOR can be an ordinary string or a regexp. This is controlled
-  by REGEXP?.
-
-- OPERATOR-ID defaults to OPERATOR. When REGEXP? is true
-  OPERATOR-ID must be supplied.
-
-- Order is important -- first match wins.
-
-- If there is an existing entry for the same OPERATOR, it is replaced;
-  otherwise a new entry is added at the end. New entries are created
-  at the end so that the (likely) most common operators (the built-in
-  ones) are found quickly to get efficient look-ups.
-
-- If you are developing new parsers you can end up with a different
-  order to when you reload from scratch. The function
-  NOMIS/EC-RESET-TO-BUILT-IN-PARSER-SPECS will be useful."
-  (cl-assert (symbolp operator-id) t)
-  (cl-assert (stringp operator) t)
-  (cl-assert (member new-default-site '(nil nec/client nec/server)) t)
-  (let* ((operator-regexp (if regexp? operator (regexp-quote operator)))
-         (regexp (-nomis/ec-operator-call-regexp operator-regexp))
-         (spec (-> spec-and-other-bits
-                   (-nomis/ec-plist-remove :operator)
-                   (-nomis/ec-plist-remove :regexp?)))
-         (new-entry (cons regexp spec)))
-    (let* ((existing-operator-id? nil))
-      (setq -nomis/ec-regexp->parser-spec
-            (cl-loop
-             for old-entry in -nomis/ec-regexp->parser-spec
-             collect (cl-destructuring-bind (regexp . spec) old-entry
-                       (if (equal operator-id (plist-get spec :operator-id))
-                           (progn (setq existing-operator-id? t)
-                                  new-entry)
-                         old-entry))))
-      (unless existing-operator-id?
-        (setq -nomis/ec-regexp->parser-spec
-              (append -nomis/ec-regexp->parser-spec
-                      (list new-entry)))))))
-
 (defun -nomis/ec-walk-and-overlay-v3 ()
   (-nomis/ec-skip-ignorables)
   (let* ((case-fold-search nil))
@@ -1587,6 +1587,8 @@ Otherwise throw an exception."
           )
          (t
           (-nomis/ec-overlay-scalar-or-quoted-form))))))
+
+;;;; ___________________________________________________________________________
 
 (defun -nomis/ec-walk-and-overlay-any-version ()
   (cond ; See avoid-case-bug-with-keywords at top of file.
