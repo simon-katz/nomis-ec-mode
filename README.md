@@ -18,7 +18,7 @@ nomis/ec-mode depends on the Emacs libraries listed below. I've been using the v
 - dash (20240510.1327)
 - parseclj (20231203.1905).
 
-I don't know how to package up Emacs libraries — how to specify dependencies etc — so for now you will have to separately make sure that parseclj is available.  (TODO: Improve this.)
+I don't know how to package up Emacs libraries — how to specify dependencies etc — so for now you will have to separately make sure that these libraries are available.  (TODO: Improve this.)
 
 ## Installing nomis/ec-mode
 
