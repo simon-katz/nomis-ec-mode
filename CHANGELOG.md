@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.7-SNAPSHOT
+## Version 0.7
 
 - Site the parentheses and the operator of Electric calls.
 
