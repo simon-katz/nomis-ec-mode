@@ -1175,6 +1175,7 @@ Otherwise throw an exception."
   NOMIS/EC-RESET-TO-BUILT-IN-PARSER-SPECS will be useful."
   (cl-assert (symbolp operator-id) t)
   (cl-assert (stringp operator) t)
+  (cl-assert (member site '(nil nec/client nec/server nec/neutral)) t)
   (cl-assert (member new-default-site '(nil nec/client nec/server)) t)
   (let* ((operator-regexp (if regexp? operator (regexp-quote operator)))
          (regexp (-nomis/ec-operator-call-regexp operator-regexp))
