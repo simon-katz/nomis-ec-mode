@@ -548,7 +548,7 @@ PROPERTY is already in PLIST."
   "The site of the code currently being analysed. One of `nec/neutral`,
 `nec/client` or `nec/server`.")
 
-(defvar *-nomis/ec-default-site* nil)
+(defvar *-nomis/ec-site-for-sited-subforms* nil)
 
 (defvar *-nomis/ec-bound-vars* '())
 
@@ -599,8 +599,8 @@ PROPERTY is already in PLIST."
                                (format "DEBUG: *-nomis/ec-site* = %s"
                                        *-nomis/ec-site*))
                              (when -nomis/ec-show-debug-overlays?
-                               (format "DEBUG: *-nomis/ec-default-site* = %s"
-                                       *-nomis/ec-default-site*)))))
+                               (format "DEBUG: *-nomis/ec-site-for-sited-subforms* = %s"
+                                       *-nomis/ec-site-for-sited-subforms*)))))
         (overlay-put ov 'help-echo (-> (-remove #'null messages)
                                        (string-join "\n")))))
     (unless nomis/ec-color-initial-whitespace?
@@ -1083,7 +1083,7 @@ Otherwise throw an exception."
         (forward-sexp)
         ;; Walk the RHS of the binding, if there is one:
         (when (-nomis/ec-skip-then-can-forward-sexp?)
-          (let* ((*-nomis/ec-default-site* new-rhs-site))
+          (let* ((*-nomis/ec-site-for-sited-subforms* new-rhs-site))
             (-nomis/ec-with-site (;; avoid-stupid-indentation
                                   :tag (cons 'binding-rhs tag)
                                   :tag-v2 'binding-rhs
@@ -1370,7 +1370,8 @@ Otherwise throw an exception."
   (cl-assert (listp terms))
   (save-excursion
     (let* ((inherited-site *-nomis/ec-site*)
-           (*-nomis/ec-default-site* (or site *-nomis/ec-default-site*)))
+           (*-nomis/ec-site-for-sited-subforms*
+            (or site *-nomis/ec-site-for-sited-subforms*)))
       (-nomis/ec-with-site (;; avoid-stupid-indentation
                             :tag (list operator-id)
                             :tag-v2 `(:operator-id ,operator-id)
@@ -1391,7 +1392,7 @@ Otherwise throw an exception."
         (-nomis/ec-with-site (;; avoid-stupid-indentation
                               :tag (list tag)
                               :tag-v2 tag
-                              :site *-nomis/ec-default-site*
+                              :site *-nomis/ec-site-for-sited-subforms*
                               :description (-> tag
                                                -nomis/ec->grammar-description))
           (nomis/ec-down-list-v3 tag)
@@ -1410,7 +1411,7 @@ Otherwise throw an exception."
       (-nomis/ec-with-site (;; avoid-stupid-indentation
                             :tag (list outer-tag)
                             :tag-v2 outer-tag
-                            :site *-nomis/ec-default-site*
+                            :site *-nomis/ec-site-for-sited-subforms*
                             :description (-> outer-tag
                                              -nomis/ec->grammar-description))
         (let* ((*-nomis/enclosing-electric-call-level* *-nomis/ec-level*))
@@ -1437,7 +1438,7 @@ Otherwise throw an exception."
     (-nomis/ec-with-site (;; avoid-stupid-indentation
                           :tag (list tag)
                           :tag-v2 tag
-                          :site *-nomis/ec-default-site*
+                          :site *-nomis/ec-site-for-sited-subforms*
                           :description (-> tag
                                            -nomis/ec->grammar-description))
       (nomis/ec-down-list-v3 tag)
@@ -1477,7 +1478,7 @@ Otherwise throw an exception."
                  ;; Nothing more.
                  ))
              (sited (tag)
-               (use-site tag *-nomis/ec-default-site*))
+               (use-site tag *-nomis/ec-site-for-sited-subforms*))
              (unsited (tag)
                (use-site tag 'nec/neutral))
              (unhandled ()
