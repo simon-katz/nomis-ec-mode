@@ -179,6 +179,13 @@ For a taste, here are some examples of built-in parser definitions:
                             :terms                 (operator
                                                     &body)))
 
+(nomis/ec-add-parser-spec `(:operator-id :dom/xxxx
+                            :operator    ,(concat "dom/"
+                                                  -nomis/ec-symbol-no-slash-regexp)
+                            :regexp?     t
+                            :terms       ((operator :site nec/client)
+                                          &body)))
+
 (nomis/ec-add-parser-spec '(:operator-id :let
                             :operator    "let"
                             :terms       (operator
@@ -199,13 +206,6 @@ For a taste, here are some examples of built-in parser definitions:
                                           key-function
                                           (let-bindings :site nec/neutral
                                                         :rhs-site nec/inherit)
-                                          &body)))
-
-(nomis/ec-add-parser-spec `(:operator-id :dom/xxxx
-                            :operator    ,(concat "dom/"
-                                                  -nomis/ec-symbol-no-slash-regexp)
-                            :regexp?     t
-                            :terms       ((operator :site nec/client)
                                           &body)))
 ```
 
