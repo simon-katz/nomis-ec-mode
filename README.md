@@ -168,14 +168,12 @@ For a taste, here are some examples of built-in parser definitions:
 (nomis/ec-add-parser-spec '(:operator-id           :e/client
                             :operator              "e/client"
                             :site                  nec/client
-                            :new-default-site      nec/client
                             :terms                 (operator
                                                     &body)))
 
 (nomis/ec-add-parser-spec '(:operator-id           :e/server
                             :operator              "e/server"
                             :site                  nec/server
-                            :new-default-site      nec/server
                             :terms                 (operator
                                                     &body)))
 

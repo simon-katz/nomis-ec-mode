@@ -1151,7 +1151,6 @@ Otherwise throw an exception."
                                             operator
                                             regexp?
                                             site
-                                            new-default-site
                                             terms))
   "Add a spec for parsing Elecric Clojure code.
 
@@ -1176,7 +1175,6 @@ Otherwise throw an exception."
   (cl-assert (symbolp operator-id) t)
   (cl-assert (stringp operator) t)
   (cl-assert (member site '(nil nec/client nec/server nec/neutral)) t)
-  (cl-assert (member new-default-site '(nil nec/client nec/server)) t)
   (let* ((operator-regexp (if regexp? operator (regexp-quote operator)))
          (regexp (-nomis/ec-operator-call-regexp operator-regexp))
          (spec (-> spec-and-other-bits
@@ -1368,15 +1366,11 @@ Otherwise throw an exception."
     (&key
      operator-id
      site
-     (new-default-site nil
-                       new-default-site-supplied?)
      terms)
   (cl-assert (listp terms))
   (save-excursion
     (let* ((inherited-site *-nomis/ec-site*)
-           (*-nomis/ec-default-site* (if new-default-site-supplied?
-                                         new-default-site
-                                       *-nomis/ec-default-site*)))
+           (*-nomis/ec-default-site* (or site *-nomis/ec-default-site*)))
       (-nomis/ec-with-site (;; avoid-stupid-indentation
                             :tag (list operator-id)
                             :tag-v2 `(:operator-id ,operator-id)
@@ -1824,7 +1818,6 @@ This is very DIY. Is there a better way?")
                               :operator-id           :e/client
                               :operator              "e/client"
                               :site                  nec/client
-                              :new-default-site      nec/client
                               :terms                 (operator
                                                       &body)))
 
@@ -1832,7 +1825,6 @@ This is very DIY. Is there a better way?")
                               :operator-id           :e/server
                               :operator              "e/server"
                               :site                  nec/server
-                              :new-default-site      nec/server
                               :terms                 (operator
                                                       &body)))
 
@@ -1848,7 +1840,6 @@ This is very DIY. Is there a better way?")
                               :operator-id      :e/defn
                               :operator         "e/defn"
                               :site             nec/neutral
-                              :new-default-site nil
                               :terms            (operator
                                                  name
                                                  doc-string?
@@ -1871,7 +1862,6 @@ This is very DIY. Is there a better way?")
                               :operator-id      :e/fn
                               :operator         "e/fn"
                               :site             nec/neutral
-                              :new-default-site nil
                               :terms            (operator
                                                  name?
                                                  (:ecase ("\\["

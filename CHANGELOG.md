@@ -2,7 +2,7 @@
 
 ## Version 0.9-SNAPSHOT
 
-- Nothing yet.
+- Get rid of `:new-default-site` in parser specs.
 
 
 ## Version 0.8
