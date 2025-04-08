@@ -6,6 +6,10 @@
 
 - Don't color comments or metadata.
 
+- Handle `@`.
+
+- Don't highlight backquote as unparsable (but also don't understand backquote/unquote semantics).
+
 
 ## Version 0.8
 

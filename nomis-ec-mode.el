@@ -403,6 +403,11 @@ PROPERTY is already in PLIST."
         (progn (forward-sexp) t)
       (error nil))))
 
+(defun -nomis/ec-backward-sexp ()
+  "Like `backward-sexp` except does not go back over quote, backquote, @ or ~."
+  (backward-sexp)
+  (skip-chars-forward "'`@~"))
+
 (defun -nomis/ec-internal-can-forward-sexp? ()
   ;; This is complicated, because `forward-sexp` behaves differently at end
   ;; of file and inside-and-at-end-of a `(...)` form.
@@ -502,7 +507,7 @@ PROPERTY is already in PLIST."
   (and (-nomis/ec-skip-then-can-forward-sexp?)
        (save-excursion
          (forward-sexp)
-         (backward-sexp)
+         (-nomis/ec-backward-sexp)
          (-nomis/ec-looking-at-start-of-form-to-descend-v2?))))
 
 (defun nomis/ec-at-or-before-start-of-form-to-descend-v3? ()
@@ -511,7 +516,7 @@ PROPERTY is already in PLIST."
   (and (-nomis/ec-skip-then-can-forward-sexp?)
        (save-excursion
          (forward-sexp)
-         (backward-sexp)
+         (-nomis/ec-backward-sexp)
          (-nomis/ec-looking-at-start-of-form-to-descend-v3?))))
 
 (cl-defun -nomis/ec-pos-end-of-form (&optional (pos (point)))
@@ -1572,6 +1577,19 @@ Otherwise throw an exception."
               (-nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax?))
           ;; Not Electric -- do nothing.
           )
+         ;; Deal with some special cases. We don't understand backquote, and we
+         ;; are probably not going to fix that. But at least don't give
+         ;; "unhandled":
+         ((looking-at "~@")
+          (forward-char 2)
+          (when (-nomis/ec-skip-then-can-forward-sexp?)
+            (-nomis/ec-walk-and-overlay-v3)))
+         ((or (looking-at "@")
+              (looking-at "`")
+              (looking-at "~"))
+          (forward-char)
+          (when (-nomis/ec-skip-then-can-forward-sexp?)
+            (-nomis/ec-walk-and-overlay-v3)))
          (t
           (-nomis/ec-overlay-scalar-or-quoted-form))))))
 
