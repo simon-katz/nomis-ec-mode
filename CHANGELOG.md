@@ -11,14 +11,14 @@
 - Don't highlight backquote as unparsable (but also don't understand backquote/unquote semantics).
 
 
-## Version 0.8
+## Version 0.8 — 2025-04-03
 
 - No change in functionality, but update some docs:
   - Update screenshots
   - Update examples of built-in parser definitions in README
 
 
-## Version 0.7
+## Version 0.7 — 2025-04-03
 
 - Site the parentheses and the operator of Electric calls.
 
@@ -27,7 +27,7 @@
 - Give error feedback for `(e/fn ...)` in operator position.
 
 
-## Version 0.6
+## Version 0.6 — 2025-03-31
 
 - Breaking change: Rename the package as `nomis-ec-mode`.
   - When upgrading you should delete the old `nomis-electric-clojure.el` file or `nomis-electric-clojure-mode` directory. See the README for details.
@@ -98,7 +98,7 @@
 - Add `M-x nomis/ec-cycle-options` to cycle through combinations of `nomis/ec-color-initial-whitespace?` and `nomis/ec-use-underline?`.
 
 
-## Version 0.2 — 2025-03-10 — Commit hash f79f10d
+## Version 0.2 — 2025-03-10
 
 - Add `e/for` in v3.
 - Add `e/for-by` in v3.
