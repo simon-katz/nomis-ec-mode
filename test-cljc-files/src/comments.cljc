@@ -9,7 +9,7 @@
 (e/defn Foo []
   ;; Lorem ipsum dolor sit amet, consectetur adipiscing elit.
   {:a "hello", :ab 2}
-  (e/server
+  (e/server ; Euismod quam tortor.
    (let [a 1 ; Nam dignissim elit.
          ;; Suspendisse euismod quam tortor.
          #_foo
@@ -28,4 +28,9 @@
   (let [a b
         #_fred
         ]
-    a))
+    a)
+
+  (e/client
+   ,,,,,
+   ;; Lorem ipsum dolor sit amet.
+   ))

@@ -13,6 +13,6 @@
   (e/server
     (ElectricCall global-1 local-1)
     (let [^:metadata-4 local-3 ^:metadata-5 (hosted-call)]
-      (println local-1)
+      (println ^:metadata-6 local-1)
       (println local-2)
       (println local-3))))

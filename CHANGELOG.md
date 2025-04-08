@@ -4,6 +4,8 @@
 
 - Get rid of `:new-default-site` in parser specs.
 
+- Don't color comments or metadata.
+
 
 ## Version 0.8
 

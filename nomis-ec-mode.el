@@ -425,6 +425,29 @@ PROPERTY is already in PLIST."
                            (point))))
                (error nil))))))
 
+(defun -nomis/ec-overlay-skipped (start end)
+  (save-excursion
+    (goto-char start)
+    (-nomis/ec-with-site (;; avoid-stupid-indentation
+                          :tag (list 'skipped)
+                          :tag-v2 'skipped
+                          :site 'nec/neutral
+                          :description (when nomis/ec-show-grammar-tooltips?
+                                         "skipped")
+                          :start start
+                          :end end)
+      ;; Nothing more.
+      )))
+
+(defun -nomis/ec-with-overlay-skip* (fun)
+  (let* ((start-pos (point)))
+    (prog1
+        (funcall fun)
+      (-nomis/ec-overlay-skipped start-pos (point)))))
+
+(cl-defmacro -nomis/ec-with-overlay-skip (&body body)
+  `(-nomis/ec-with-overlay-skip* (lambda () ,@body)))
+
 (defun -nomis/ec-skip-ignorables ()
   (cl-labels ((helper (n-outstanding-comments)
                 (cond ((looking-at "[[:space:]\n]")
@@ -432,34 +455,39 @@ PROPERTY is already in PLIST."
                        (helper n-outstanding-comments))
 
                       ((looking-at ",")
-                       (forward-char)
+                       (-nomis/ec-with-overlay-skip
+                        (forward-char))
                        (helper n-outstanding-comments))
 
                       ((looking-at (regexp-quote "^"))
-                       (while (looking-at (regexp-quote "^"))
-                         (forward-char)
-                         (forward-sexp))
+                       (-nomis/ec-with-overlay-skip
+                        (while (looking-at (regexp-quote "^"))
+                          (forward-char)
+                          (forward-sexp)))
                        (helper n-outstanding-comments))
 
                       ((looking-at "#_")
-                       (forward-char 2)
+                       (-nomis/ec-with-overlay-skip
+                        (forward-char 2))
                        (helper (1+ n-outstanding-comments)))
 
                       ((looking-at ";")
-                       (beginning-of-line 2)
+                       (-nomis/ec-with-overlay-skip
+                        (beginning-of-line 2))
                        (helper n-outstanding-comments))
 
                       ((> n-outstanding-comments 0)
-                       (if (-nomis/ec-internal-can-forward-sexp?)
-                           (progn (forward-sexp)
-                                  (helper (1- n-outstanding-comments)))
-                         (-nomis/ec-overlay-unparsable (save-excursion
-                                                         (backward-sexp)
-                                                         (forward-sexp)
-                                                         (point))
-                                                       (-nomis/ec-pos-close-bracket)
-                                                       'missing-form-for-comment
-                                                       "Missing form for #_ comment"))))))
+                       (-nomis/ec-with-overlay-skip
+                        (if (-nomis/ec-internal-can-forward-sexp?)
+                            (progn (forward-sexp)
+                                   (helper (1- n-outstanding-comments)))
+                          (-nomis/ec-overlay-unparsable (save-excursion
+                                                          (backward-sexp)
+                                                          (forward-sexp)
+                                                          (point))
+                                                        (-nomis/ec-pos-close-bracket)
+                                                        'missing-form-for-comment
+                                                        "Missing form for #_ comment")))))))
     (helper 0))
   (when (-nomis/ec-internal-can-forward-sexp?)
     (-nomis/ec-show-place-for-metadata)))
