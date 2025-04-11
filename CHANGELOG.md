@@ -10,6 +10,8 @@
 
 - Don't highlight backquote as unparsable (but also don't understand backquote/unquote semantics).
 
+- Make unparsable face less intrusive — underline instead of box.
+
 
 ## Version 0.8 — 2025-04-03
 
