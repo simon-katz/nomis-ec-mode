@@ -1415,6 +1415,18 @@ Otherwise throw an exception."
 ;;;; ___________________________________________________________________________
 ;;;; High-level walking and overlaying for v3
 
+(defun -nomis/ec-overlay-hosted-anonymous-fn ()
+  (let* ((tag 'hosted-anonymous-fn))
+    (-nomis/ec-with-site (;; avoid-stupid-indentation
+                          :tag (list tag)
+                          :tag-v2 tag
+                          :site *-nomis/ec-site-for-sited-subforms*
+                          :description (-> tag
+                                           -nomis/ec->grammar-description)
+                          :print-env? t)
+      ;; Nothing more.
+      )))
+
 (defun -nomis/ec-overlay-hosted-call ()
   (save-excursion
     (let* ((tag 'hosted-call))
@@ -1561,6 +1573,9 @@ Otherwise throw an exception."
                           (apply #'-nomis/ec-overlay-using-parser-spec spec)
                           t))
         (cond
+         ((or (-nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax?)
+              (-nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax?))
+          (-nomis/ec-overlay-hosted-anonymous-fn))
          ((-nomis/ec-looking-at-hosted-call?)
           (-nomis/ec-overlay-hosted-call))
          ((-nomis/ec-looking-at-electric-call?)
@@ -1571,10 +1586,6 @@ Otherwise throw an exception."
           (-nomis/ec-overlay-other-bracketed-form))
          ((-nomis/ec-looking-at-start-of-literal-data?)
           (-nomis/ec-overlay-literal-data))
-         ((or (-nomis/ec-looking-at-hosted-anonymous-fn-fn-syntax?)
-              (-nomis/ec-looking-at-hosted-anonymous-fn-reader-syntax?))
-          ;; Not Electric -- do nothing.
-          )
          ;; Deal with some special cases. We don't understand backquote, and we
          ;; are probably not going to fix that. But at least don't give
          ;; "unhandled":

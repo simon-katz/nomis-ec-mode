@@ -12,6 +12,8 @@
 
 - Make unparsable face less intrusive — underline instead of box.
 
+- Always site hosted anonymous functions.
+
 
 ## Version 0.8 — 2025-04-03
 

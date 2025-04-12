@@ -20,4 +20,6 @@
       global-1)
      (#(hosted-call %1 %2 local-2 global-1)
       local-2
-      global-1))))
+      global-1)
+     (ElectricCall (fn [x y] (hosted-call x y local-2 global-1)))
+     (ElectricCall #(hosted-call %1 %2 local-2 global-1)))))
