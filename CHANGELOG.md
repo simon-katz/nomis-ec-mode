@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 0.9-SNAPSHOT
+## Version 0.9
 
 - Get rid of `:new-default-site` in parser specs.
 
