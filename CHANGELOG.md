@@ -5,7 +5,7 @@
 - Nothing yet.
 
 
-## Version 0.9
+## Version 0.9 — 2025-04-13
 
 - Get rid of `:new-default-site` in parser specs.
 
