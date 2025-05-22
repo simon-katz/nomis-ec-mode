@@ -101,12 +101,12 @@ Electric Clojure client and server code."
   :type 'boolean)
 
 (defface nomis/ec-client-face/using-background
-  `((((background dark)) ,(list :background "DarkGreen"))
+  `((((background dark)) ,(list :background "#006400"))
     (t ,(list :background "DarkSeaGreen1")))
   "Face for Electric Clojure client code when using background color.")
 
 (defface nomis/ec-server-face/using-background
-  `((((background dark)) ,(list :background "IndianRed4"))
+  `((((background dark)) ,(list :background "#8b3a3a"))
     (t ,(list :background "#ffc5c5")))
   "Face for Electric Clojure server code when using background color.")
 
