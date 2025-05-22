@@ -248,6 +248,10 @@ specifically server code, when `-nomis/ec-show-debug-overlays?` is true.")
                       :inherit
                       (-nomis/ec-compute-unparsable-face)))
 
+(defun -nomis/update-faces-and-redraw-all-buffers ()
+  (-nomis/ec-update-faces)
+  (-nomis/ec-redraw-all-buffers))
+
 ;;;; ___________________________________________________________________________
 ;;;; Version
 
@@ -1774,12 +1778,10 @@ If `nomis/ec-use-underline?' is nil, cycle between the following states:
     (cond ((not nomis/ec-mode)
            (nomis/ec-mode 1)
            (setq -nomis/ec-bright-background? nil)
-           (-nomis/ec-update-faces)
-           (-nomis/ec-redraw-all-buffers))
+           (-nomis/update-faces-and-redraw-all-buffers))
           ((not -nomis/ec-bright-background?)
            (setq -nomis/ec-bright-background? t)
-           (-nomis/ec-update-faces)
-           (-nomis/ec-redraw-all-buffers))
+           (-nomis/update-faces-and-redraw-all-buffers))
           (t
            (nomis/ec-mode -1)))
     (when nomis/ec-mode)))
@@ -1830,8 +1832,7 @@ If `nomis/ec-use-underline?' is nil, cycle between the following states:
 (defun nomis/ec-toggle-debug-show-debug-overlays ()
   (interactive)
   (setq -nomis/ec-show-debug-overlays? (not -nomis/ec-show-debug-overlays?))
-  (-nomis/ec-update-faces)
-  (-nomis/ec-redraw-all-buffers)
+  (-nomis/update-faces-and-redraw-all-buffers)
   (message "%s debug overlays"
            (if -nomis/ec-show-debug-overlays? "Showing" "Not showing")))
 
@@ -1849,8 +1850,7 @@ If `nomis/ec-use-underline?' is nil, cycle between the following states:
            (new-v (mod (1+ v) 4)))
       (setq nomis/ec-color-initial-whitespace? (not (zerop (logand 1 new-v))))
       (setq nomis/ec-use-underline?            (not (zerop (logand 2 new-v))))
-      (-nomis/ec-update-faces)
-      (-nomis/ec-redraw-all-buffers))))
+      (-nomis/update-faces-and-redraw-all-buffers))))
 
 (defun nomis/ec-toggle-debug-feedback-flash ()
   (interactive)
