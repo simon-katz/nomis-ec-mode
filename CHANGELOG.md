@@ -4,6 +4,8 @@
 
 - Tone down client and server dark colors
 
+- Make overlay priorities less intrusive by using values of the form `(cons nil ...)`.
+
 
 ## Version 0.9 — 2025-04-13
 

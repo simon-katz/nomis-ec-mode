@@ -637,8 +637,8 @@ PROPERTY is already in PLIST."
     (unless nomis/ec-color-initial-whitespace?
       ;; We have multiple overlays in the same place, so we need to
       ;; specify their priority.
-      (overlay-put ov 'priority (+ nomis/ec-base-priority-for-overlays
-                                   nesting-level)))
+      (overlay-put ov 'priority (cons nil (+ nomis/ec-base-priority-for-overlays
+                                             nesting-level))))
     ov))
 
 (defun -nomis/ec-overlay-lump (tag site nesting-level start end description)
