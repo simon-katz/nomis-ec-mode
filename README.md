@@ -126,7 +126,20 @@ Here's an example:
 
 # Cycling Through Combinations of Options
 
-You can cycle through combinations of `nomis/ec-color-initial-whitespace?` and `nomis/ec-use-underline?` using `M-x nomis/ec-cycle-options`.
+## `nomis/ec-cycle-options`
+
+The command `M-x nomis/ec-cycle-options` cycles through combinations of `nomis/ec-color-initial-whitespace?` and `nomis/ec-use-underline?`.
+
+## `nomis/ec-cycle-mode-and-brightness`
+
+The command `M-x nomis/ec-cycle-mode-and-brightness` cycles state as follows:
+
+- If `nomis/ec-use-underline?` is truthy, it toggles `nomis/ec-mode`.
+
+- If `nomis/ec-use-underline?` is nil, it cycles between the following states:
+  - `nomis/ec-mode` turned off
+  - `nomis/ec-mode` turned on with dim background colours
+  - `nomis/ec-mode` turned on with bright background colours.
 
 
 # Other Customization
@@ -139,7 +152,7 @@ You can cycle through combinations of `nomis/ec-color-initial-whitespace?` and `
 I use the following keyboard shortcuts:
 
 ```
-(define-key clojure-mode-map (kbd "M-E") 'nomis/ec-mode)
+(define-key clojure-mode-map (kbd "M-E")   'nomis/ec-cycle-mode-and-brightness)
 (define-key clojure-mode-map (kbd "C-M-e") 'nomis/ec-cycle-options)
 ```
 

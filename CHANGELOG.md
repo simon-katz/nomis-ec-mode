@@ -2,7 +2,7 @@
 
 ## Version 0.10-SNAPSHOT
 
-- Tone down client and server dark colors
+- Add `nomis/ec-cycle-mode-and-brightness` command.
 
 - Make overlay priorities less intrusive by using values of the form `(cons nil ...)`.
 

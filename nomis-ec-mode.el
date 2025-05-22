@@ -100,15 +100,25 @@ sited code."
 Electric Clojure client and server code."
   :type 'boolean)
 
-(defface nomis/ec-client-face/using-background
+(defface nomis/ec-client-face/using-background-dim
   `((((background dark)) ,(list :background "#204a20"))
     (t ,(list :background "DarkSeaGreen1")))
-  "Face for Electric Clojure client code when using background color.")
+  "Face for Electric Clojure client code when using dim background color.")
 
-(defface nomis/ec-server-face/using-background
+(defface nomis/ec-client-face/using-background
+  `((((background dark)) ,(list :background "#006400"))
+    (t ,(list :background "DarkSeaGreen1")))
+  "Face for Electric Clojure client code when using bright background color.")
+
+(defface nomis/ec-server-face/using-background-dim
   `((((background dark)) ,(list :background "#603030"))
     (t ,(list :background "#ffc5c5")))
-  "Face for Electric Clojure server code when using background color.")
+  "Face for Electric Clojure server code when using dim background color.")
+
+(defface nomis/ec-server-face/using-background
+  `((((background dark)) ,(list :background "#8b3a3a"))
+    (t ,(list :background "#ffc5c5")))
+  "Face for Electric Clojure server code when using bright background color.")
 
 (defface nomis/ec-unparsable-face/using-background
   `((t ,(list :underline (list :color "Red"))))
@@ -174,15 +184,19 @@ specifically server code, when `-nomis/ec-show-debug-overlays?` is true.")
 ;;;; ___________________________________________________________________________
 ;;;; Computing and updating faces
 
+(defvar -nomis/ec-bright-background? nil)
+
 (defun -nomis/ec-compute-client-face ()
-  (if nomis/ec-use-underline?
-      'nomis/ec-client-face/using-underline
-    'nomis/ec-client-face/using-background))
+  (cond
+   (nomis/ec-use-underline?      'nomis/ec-client-face/using-underline)
+   (-nomis/ec-bright-background? 'nomis/ec-client-face/using-background)
+   (t                            'nomis/ec-client-face/using-background-dim)))
 
 (defun -nomis/ec-compute-server-face ()
-  (if nomis/ec-use-underline?
-      'nomis/ec-server-face/using-underline
-    'nomis/ec-server-face/using-background))
+  (cond
+   (nomis/ec-use-underline?      'nomis/ec-server-face/using-underline)
+   (-nomis/ec-bright-background? 'nomis/ec-server-face/using-background)
+   (t                            'nomis/ec-server-face/using-background-dim)))
 
 (defun -nomis/ec-compute-neutral-face ()
   (if -nomis/ec-show-debug-overlays?
@@ -1746,6 +1760,29 @@ This is very DIY. Is there a better way?")
 
 ;;;; ___________________________________________________________________________
 ;;;; ---- Interactive commands ----
+
+(defun nomis/ec-cycle-mode-and-brightness ()
+  "If `nomis/ec-use-underline?' is truthy, toggle `nomis/ec-mode'.
+
+If `nomis/ec-use-underline?' is nil, cycle between the following states:
+- `nomis/ec-mode' turned off.
+- `nomis/ec-mode' turned on with dim background colours.
+- `nomis/ec-mode' turned on with bright background colours."
+  (interactive)
+  (if nomis/ec-use-underline?
+      (nomis/ec-mode 'toggle)
+    (cond ((not nomis/ec-mode)
+           (nomis/ec-mode 1)
+           (setq -nomis/ec-bright-background? nil)
+           (-nomis/ec-update-faces)
+           (-nomis/ec-redraw-all-buffers))
+          ((not -nomis/ec-bright-background?)
+           (setq -nomis/ec-bright-background? t)
+           (-nomis/ec-update-faces)
+           (-nomis/ec-redraw-all-buffers))
+          (t
+           (nomis/ec-mode -1)))
+    (when nomis/ec-mode)))
 
 (defun -nomis/ec-redraw ()
   (-nomis/ec-disable)
