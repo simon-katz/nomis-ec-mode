@@ -2,7 +2,7 @@
 
 ## Version 0.10-SNAPSHOT
 
-- Nothing yet.
+- Tone down client and server dark colors
 
 
 ## Version 0.9 — 2025-04-13
