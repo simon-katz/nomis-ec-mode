@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.11-SNAPSHOT
+
+- Nothing yet.
+
+
 ## Version 0.10 — 2025-06-19
 
 - Add `nomis/ec-cycle-mode-and-brightness` command.
